@@ -67,6 +67,8 @@ $EDITOR roster.json                            # every installed account; see ex
 ./scripts/run_weekly.sh                        # needs Claude Code on the PATH
 ```
 
+Sources are your choice: any call recorder, CRM or tracker that can fill those three inputs works
+([Choosing your sources](docs/04-status-rules.md#choosing-your-sources)).
 `config.json`, `roster.json`, `transcripts/`, `notes/` and `output/` are git-ignored. Your customers'
 words never belong in a repo. The board is a local HTML file; publishing it is deliberately a
 separate step, so a person sees every new red first ([Decision 9](DECISIONS.md#9-a-person-sees-a-new-red-before-anyone-else)).

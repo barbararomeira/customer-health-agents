@@ -39,14 +39,30 @@ starts at **2**. Open asks and warnings younger than 3 weeks count 0, so they ca
 
 ## Inputs and how far each can push an account
 
-| Input | Source | Used for | Can push an account to |
+| Input | What the source must give you | Used for | Can push an account to |
 |---|---|---|---|
-| Customer call transcripts, last 4 weeks | Every call recorder the team uses. Full transcripts, not summaries | Main evidence: churn signals, warning signs, tone, open asks | **Red** |
-| Who speaks on calls | Transcript speakers. Calendar invitees don't count | The "disengaging" warning sign | **Red**, as 1 of 2 warning signs |
-| Contract, pilot/POC and decision end dates | The account tracker | "No value" and "value not proven" count only if a date is within 90 days | Gate on other signals |
-| Account owners' notes | The account tracker: blockers, last update, delay reasons | Context, plus "stuck" (installed 12+ weeks, not delivering) | **Yellow**, never green alone |
-| Internal calls about the account | Call recorder | Context only. Not the customer's voice | Nothing |
-| Product usage | Product analytics | Not connected yet | Nothing yet |
+| Customer call transcripts, last 4 weeks | Full transcripts (not summaries) with dates and speaker names | Main evidence: churn signals, warning signs, tone, open asks | **Red** |
+| Who speaks on calls | Speaker labels in the transcript. Calendar invitees don't count | The "disengaging" warning sign | **Red**, as 1 of 2 warning signs |
+| Contract, pilot/POC and decision end dates | One nearest end date per account, and what kind of date it is | "No value" and "value not proven" count only if a date is within 90 days | Gate on other signals |
+| Account owners' notes | Dated notes per account: blockers, last update, delay reasons | Context, plus "stuck" (installed 12+ weeks, not delivering) | **Yellow**, never green alone |
+| Internal calls about the account | Same as customer calls, marked as internal | Context only. Not the customer's voice | Nothing |
+| Product usage | Activity per account over time | Not connected yet | Nothing yet |
+
+### Choosing your sources
+
+The rules don't care where the data comes from. Use whatever your team already has; the run only
+reads three things, all from files:
+
+| The run reads | Fill it from, for example |
+|---|---|
+| `transcripts/`: one file per call | Any call recorder or meeting-notes tool that exports full transcripts with speaker names, or transcripts pasted in by hand |
+| `notes/`: one file per account | A CRM, a project tracker, a shared doc, or a spreadsheet export of the account owners' updates |
+| `roster.json`: every installed account | A CRM, a contracts sheet or a sales pipeline: owner, nearest end date, and its label (contract end, renewal, pilot end, decision meeting) |
+
+Where the files live is set in `config.json` → `sources`. If you have more than one place for the
+same input (two call recorders, say), merge them into the same folder. Whatever you choose, the
+minimum bar is the middle column of the table above: a source that only gives summaries, or no
+speaker names, can't support the tone and attendance rules.
 
 ## Statuses
 

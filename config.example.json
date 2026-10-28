@@ -5,6 +5,7 @@
   "window_weeks": 4,
 
   "sources": {
+    "_comment": "Any tool works. These are just the folders the run reads; fill them from whichever call recorder, CRM or tracker you use. See docs/04-status-rules.md#choosing-your-sources.",
     "transcripts_dir": "transcripts",
     "notes_dir": "notes",
     "roster_file": "roster.json"
