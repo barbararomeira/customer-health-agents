@@ -1,0 +1,28 @@
+{
+ "2026-W10": {
+  "Acme Foods": "yellow",
+  "Brightwater Labs": "red",
+  "Corvel Plastics": "green",
+  "Halden Pumps": "green",
+  "Lumen Devices": "green",
+  "Orbis Packaging": "green",
+  "Vertex Motors": "green"
+ },
+ "2026-W11": {
+  "Acme Foods": "yellow",
+  "Brightwater Labs": "red",
+  "Corvel Plastics": "green",
+  "Halden Pumps": "yellow",
+  "Lumen Devices": "green",
+  "Orbis Packaging": "no_signal",
+  "Vertex Motors": "yellow"
+ },
+ "2026-W12": {
+  "Acme Foods": "red",
+  "Corvel Plastics": "yellow",
+  "Halden Pumps": "yellow",
+  "Lumen Devices": "green",
+  "Orbis Packaging": "no_signal",
+  "Vertex Motors": "yellow"
+ }
+}

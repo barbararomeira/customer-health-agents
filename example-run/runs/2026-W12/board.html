@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Health Board</title>
+<style>/* Layout: header + counts, red full width, yellow as a card grid, then no signal / green / recurring reasons. Words and numbers only, no charts. */
+:root {
+  --bg: #f5f7fb; --panel: #ffffff; --fg: #101a30; --muted: #5d6882; --line: #e1e6ef;
+  --brand: #3a5bd9; --red: #d1362e; --red-soft: #fcecea; --yellow: #c27c0e; --yellow-soft: #fdf3e1;
+  --green: #1d8a4e; --green-soft: #e7f5ec; --grey: #6b7486; --grey-soft: #eef0f5;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0b1120; --panel: #121a2c; --fg: #e7ecf6; --muted: #98a3bb; --line: #232e45;
+  --brand: #8aa2ff; --red: #ff6d64; --red-soft: #351b1d; --yellow: #eab450; --yellow-soft: #30260f;
+  --green: #4fc788; --green-soft: #122e1f; --grey: #a5aec1; --grey-soft: #1c2537; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0b1120; --panel: #121a2c; --fg: #e7ecf6; --muted: #98a3bb; --line: #232e45;
+  --brand: #8aa2ff; --red: #ff6d64; --red-soft: #351b1d; --yellow: #eab450; --yellow-soft: #30260f;
+  --green: #4fc788; --green-soft: #122e1f; --grey: #a5aec1; --grey-soft: #1c2537; color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--sans); }
+.wrap { max-width: 1400px; margin: 0 auto; padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 32px; }
+p { margin: 0; }
+.muted { color: var(--muted); font-size: 12.5px; }
+header.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px 32px; }
+h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.015em; }
+.counts { display: flex; flex-wrap: wrap; gap: 8px; }
+.count { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+.count b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.count span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.count.r b { color: var(--red); } .count.y b { color: var(--yellow); } .count.g b { color: var(--green); } .count.n b { color: var(--grey); }
+h2 { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+h2 i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.red-card { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--red); border-radius: 10px; padding: 18px 22px; display: grid; gap: 14px; }
+.rc-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.rc-head h3 { margin: 0; font-size: 19px; }
+.chip { font-size: 12px; font-weight: 600; color: var(--red); background: var(--red-soft); padding: 2px 9px; border-radius: 999px; }
+.headline { font-size: 16px; font-weight: 600; text-wrap: balance; }
+.reasons { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px 24px; }
+.reasons li { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.drv { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+blockquote { margin: 2px 0 0; padding-left: 10px; border-left: 2px solid var(--red); font-style: italic; }
+.src { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; }
+.src a { color: var(--brand); text-decoration: none; } .src a:hover { text-decoration: underline; }
+.sup { padding-top: 12px; border-top: 1px dashed var(--line); }
+.sup span { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-right: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--yellow); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.card.n { border-top-color: var(--grey); }
+.c-head { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; }
+.c-head h4 { margin: 0; font-size: 14.5px; font-weight: 700; }
+.c-line { font-weight: 500; }
+.detail { color: var(--muted); font-size: 13px; }
+details summary { cursor: pointer; font-size: 12px; color: var(--brand); width: fit-content; }
+details .src { margin-top: 6px; display: grid; gap: 2px; }
+.tag { font-size: 10.5px; font-weight: 700; color: var(--red); background: var(--red-soft); padding: 1px 7px; border-radius: 999px; }
+.bottom { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.bottom .grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.gchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.gchip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--green-soft); color: var(--fg); }
+.pat { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pat li { display: flex; justify-content: space-between; gap: 12px; }
+.pat span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.foot { color: var(--muted); font-size: 12px; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-top: -12px; overflow-x: auto; }
+.tabs a { padding: 10px 14px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 13.5px; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs a[aria-current="page"] { color: var(--fg); border-bottom-color: var(--brand); }
+.tabs a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.view { display: grid; gap: 32px; }
+.view[hidden] { display: none; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.red { background: var(--red-soft); color: var(--red); }
+.pill.yellow { background: var(--yellow-soft); color: var(--yellow); }
+.pill.green { background: var(--green-soft); color: var(--green); }
+.pill.churned { background: var(--fg); color: var(--bg); }
+.pill.no_signal, .pill.none { background: var(--grey-soft); color: var(--grey); }
+.tbl { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.trend { border-collapse: collapse; width: 100%; }
+.trend th, .trend td { padding: 9px 14px; border-top: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.trend thead th { border-top: 0; font-size: 12px; color: var(--muted); font-weight: 600; }
+.trend tbody th { font-weight: 600; }
+.how { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 14px; align-items: start; }
+.how h3 { margin: 0 0 8px; font-size: 15px; }
+.how ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.how dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: baseline; }
+.how dd { margin: 0; }
+.how .panel { display: grid; gap: 8px; }
+@media (max-width: 900px) { .bottom { grid-template-columns: 1fr; } }
+</style></head>
+<body><div class="wrap">
+  <header class="top">
+    <div><h1>Customer Health · Week 12</h1>
+      <p class="muted">All installed accounts · customer calls and internal notes, last 4 weeks · run 2026-03-16</p></div>
+    <div class="counts" aria-label="Summary">
+      <div class="count r"><b>1</b><span>Red</span></div>
+      <div class="count y"><b>3</b><span>Yellow</span></div>
+      <div class="count g"><b>1</b><span>Green</span></div>
+      <div class="count n"><b>1</b><span>No signal</span></div>
+    </div>
+  </header>
+  <nav class="tabs" aria-label="Views">
+    <a href="#board" data-view="board">This week</a><a href="#trend" data-view="trend">Weekly trend</a><a href="#how" data-view="how">How it works</a>
+  </nav>
+  <div class="view" id="view-trend" hidden>
+    <section><h2>Status by week</h2>
+      <div class="tbl"><table class="trend"><thead><tr><th>Account</th><th>Owner</th><th>W10</th><th>W11</th><th>W12</th><th>Current status since</th><th>Last 12 months</th></tr></thead>
+      <tbody><tr><th scope="row">Acme Foods</th><td class="muted">Marco</td><td><span class="pill yellow">Yellow</span></td><td><span class="pill yellow">Yellow</span></td><td><span class="pill red">Red</span></td><td class="muted">W12</td><td class="muted">1 red · 2 yellow weeks</td></tr><tr><th scope="row">Corvel Plastics</th><td class="muted">Marco</td><td><span class="pill green">Green</span></td><td><span class="pill green">Green</span></td><td><span class="pill yellow">Yellow</span></td><td class="muted">W12</td><td class="muted">1 yellow · 2 green weeks</td></tr><tr><th scope="row">Halden Pumps</th><td class="muted">Priya</td><td><span class="pill green">Green</span></td><td><span class="pill yellow">Yellow</span></td><td><span class="pill yellow">Yellow</span></td><td class="muted">W11</td><td class="muted">2 yellow · 1 green weeks</td></tr><tr><th scope="row">Vertex Motors</th><td class="muted">Daniel</td><td><span class="pill green">Green</span></td><td><span class="pill yellow">Yellow</span></td><td><span class="pill yellow">Yellow</span></td><td class="muted">W11</td><td class="muted">2 yellow · 1 green weeks</td></tr><tr><th scope="row">Orbis Packaging</th><td class="muted">Daniel</td><td><span class="pill green">Green</span></td><td><span class="pill no_signal">No signal</span></td><td><span class="pill no_signal">No signal</span></td><td class="muted">W11</td><td class="muted">1 green · 2 no signal weeks</td></tr><tr><th scope="row">Lumen Devices</th><td class="muted">Priya</td><td><span class="pill green">Green</span></td><td><span class="pill green">Green</span></td><td><span class="pill green">Green</span></td><td class="muted">W10</td><td class="muted">3 green weeks</td></tr><tr><th scope="row">Brightwater Labs</th><td class="muted">—</td><td><span class="pill red">Red</span></td><td><span class="pill red">Red</span></td><td><span class="pill none">—</span></td><td class="muted">Left</td><td class="muted">2 red weeks</td></tr></tbody></table></div></section>
+  </div>
+  <div class="view" id="view-how" hidden>
+<div class="how">
+  <section class="panel"><h3>What the board answers</h3>
+    <p>Which installed accounts would likely churn without an escalation, and why. Every account gets one status each week, and every reason links to the call or note it comes from.</p></section>
+  <section class="panel"><h3>The four statuses</h3>
+    <dl>
+      <dt><span class="pill red">Red</span></dt><dd>Would likely churn without escalation. Kept rare: one explicit churn signal from the customer, or two strong warning signs that have lasted 3 weeks or more.</dd>
+      <dt><span class="pill yellow">Yellow</span></dt><dd>Something is off, not at escalation level: one warning sign, a negative trend younger than 3 weeks, or an open ask nobody has answered.</dd>
+      <dt><span class="pill green">Green</span></dt><dd>Engaged, tone normal or positive, no serious open complaint. Needs at least one customer call in the window.</dd>
+      <dt><span class="pill no_signal">No signal</span></dt><dd>No customer call in the last 4 weeks. Internal notes add context but cannot make an account green, because silence is not health.</dd>
+    </dl></section>
+  <section class="panel"><h3>What never counts against an account</h3>
+    <ul>
+      <li>A missing recording with no explanation. It is marked unknown, never a no-show.</li>
+      <li>Internal calls. They explain context but are not the customer's voice.</li>
+      <li>Deliberate product design the customer agreed to.</li>
+    </ul>
+    <p class="muted">Reasons are written about the account, never about the account owner.</p></section>
+  <section class="panel"><h3>Rules version</h3><p>v0.2, proposed. Backtested on one account that had already left.</p></section>
+</div></div>
+  <div class="view" id="view-board">
+    <section><h2><i style="background:var(--red)"></i>Red · needs escalation</h2><article class="red-card">
+  <div class="rc-head"><h3>Acme Foods</h3><span class="tag">New</span><span class="muted">Owner Marco</span><span class="chip">Pilot ends 2026-05-01 · 46 days</span></div>
+  <p class="headline">Operations director says nothing is usable, and the pilot ends 1 May</p>
+  <ul class="reasons"><li><span class="drv">Churn signal</span><p>The operations director said the pilot has produced nothing usable and that they will not continue unless the board sees something different by the pilot end.</p><blockquote>“If I can&#x27;t show the board something different by then, we won&#x27;t continue.”</blockquote><div class="src"><a href="../../transcripts/2026-03-10_acme-foods_pilot-review.md#L10" target="_blank" rel="noopener">Pilot review, 2026-03-10 (03:20)</a></div></li><li><span class="drv">Value not proven</span><p>The downtime report is seen as a copy of what their own system already shows.</p><blockquote>“It duplicates what we have.”</blockquote><div class="src"><a href="../../transcripts/2026-03-10_acme-foods_pilot-review.md#L7" target="_blank" rel="noopener">Pilot review, 2026-03-10 (01:02)</a><a href="../../transcripts/2026-02-24_acme-foods_weekly.md#L7" target="_blank" rel="noopener">Weekly, 2026-02-24 (01:50)</a></div></li><li><span class="drv">Data trust</span><p>Packing-station counts were wrong in two separate weeks and the line team stopped checking them.</p><blockquote>“My team stopped checking them.”</blockquote><div class="src"><a href="../../transcripts/2026-03-10_acme-foods_pilot-review.md#L8" target="_blank" rel="noopener">Pilot review, 2026-03-10 (01:30)</a><a href="../../transcripts/2026-02-24_acme-foods_weekly.md#L5" target="_blank" rel="noopener">Weekly, 2026-02-24 (00:10)</a></div></li></ul><p class="sup"><span>Support needed</span>A leadership call before 1 April with one result the customer&#x27;s own system cannot show, and the packing-count fix confirmed on site.</p>
+</article></section>
+    <section><h2><i style="background:var(--yellow)"></i>Yellow · watch</h2><div class="grid"><article class="card y">
+  <div class="c-head"><h4>Corvel Plastics</h4><span class="tag">New</span><span class="muted">Marco</span></div>
+  <p class="c-line">Procurement is asking how many licences they really need next year</p><p class="detail">Relayed after the call, not said on it. The engineer&#x27;s own feedback is positive.</p><details><summary>Sources (2)</summary><div class="src"><a href="../../notes/corvel-plastics.md#L3" target="_blank" rel="noopener">Internal note, 2026-03-11</a><a href="../../transcripts/2026-03-09_corvel-plastics_weekly.md#L5" target="_blank" rel="noopener">Weekly, 2026-03-09 (00:12)</a></div></details>
+</article><article class="card y">
+  <div class="c-head"><h4>Halden Pumps</h4><span class="muted">Priya</span></div>
+  <p class="c-line">Plant manager has missed two calls and line 2 is &#x27;not a priority this month&#x27;</p><p class="detail">Line 3 is used every morning; the expansion decision has stalled.</p><details><summary>Sources (3)</summary><div class="src"><a href="../../transcripts/2026-03-12_halden-pumps_weekly.md#L6" target="_blank" rel="noopener">Weekly, 2026-03-12 (00:18)</a><a href="../../transcripts/2026-03-05_halden-pumps_weekly.md#L6" target="_blank" rel="noopener">Weekly, 2026-03-05 (00:12)</a><a href="../../transcripts/2026-02-19_halden-pumps_monthly-review.md#L7" target="_blank" rel="noopener">Monthly review, 2026-02-19 (01:05)</a></div></details>
+</article><article class="card y">
+  <div class="c-head"><h4>Vertex Motors</h4><span class="muted">Daniel</span></div>
+  <p class="c-line">Plant manager joined to chase an Excel export asked for on 3 March</p><p class="detail">Promised a date by Friday 13 March. The cycle-time work itself is valued.</p><details><summary>Sources (2)</summary><div class="src"><a href="../../transcripts/2026-03-12_vertex-motors_weekly.md#L5" target="_blank" rel="noopener">Weekly, 2026-03-12 (00:25)</a><a href="../../transcripts/2026-03-03_vertex-motors_weekly.md#L6" target="_blank" rel="noopener">Weekly, 2026-03-03 (01:15)</a></div></details>
+</article></div></section>
+    <div class="bottom">
+      <section><h2><i style="background:var(--grey)"></i>No signal · no customer call</h2><div class="grid"><article class="card n">
+  <div class="c-head"><h4>Orbis Packaging</h4><span class="muted">Daniel</span></div>
+  <p class="c-line">No call since the line rebuild; the customer moved to monthly calls</p><p class="detail">Next call 26 March. Notes say the rebuild is on schedule.</p><details><summary>Sources (1)</summary><div class="src"><a href="../../notes/orbis-packaging.md#L3" target="_blank" rel="noopener">Internal note, 2026-02-20</a></div></details>
+</article></div></section>
+      <section><h2><i style="background:var(--green)"></i>Green</h2><div class="panel gchips"><span class="gchip">Lumen Devices</span></div></section>
+      <section><h2>Recurring reasons</h2><div class="panel"><ul class="pat"><li><b>Value not proven</b><span>2 of 4</span></li></ul></div></section>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  var views = ["board", "trend", "how"];
+  function show() {
+    var v = (location.hash || "#board").slice(1);
+    if (views.indexOf(v) < 0) v = "board";
+    views.forEach(function (n) { document.getElementById("view-" + n).hidden = n !== v; });
+    document.querySelectorAll(".tabs a").forEach(function (a) {
+      if (a.dataset.view === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+  }
+  window.addEventListener("hashchange", show);
+  show();
+})();
+</script>
+</body></html>

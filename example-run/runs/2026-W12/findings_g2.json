@@ -1,0 +1,52 @@
+{"accounts": [
+ {
+  "account": "Lumen Devices",
+  "status": "green",
+  "rule_applied": "Engaged, positive, asking to expand",
+  "customer_call_in_window": true,
+  "headline": "Scrap is down since January and they want to add the assembly hall",
+  "detail": "Quality team uses the reject clips most.",
+  "why": [
+   {
+    "reason": "The plant director confirms lower scrap in their own numbers and raised expansion.",
+    "driver": "other", "weeks_present": 1, "relayed": false,
+    "quote": "I'd like to talk about adding the assembly hall next quarter.",
+    "evidence": [{"label": "Quarterly review, 2026-03-11 (02:50)", "url": "../../transcripts/2026-03-11_lumen-devices_quarterly-review.md#L7"}]
+   }
+  ]
+ },
+ {
+  "account": "Orbis Packaging",
+  "status": "no_signal",
+  "rule_applied": "No customer call in the window; notes explain why",
+  "customer_call_in_window": false,
+  "headline": "No call since the line rebuild; the customer moved to monthly calls",
+  "detail": "Next call 26 March. Notes say the rebuild is on schedule.",
+  "why": [
+   {
+    "reason": "The customer moved the weekly call to monthly during a line rebuild. Not a no-show.",
+    "driver": "other", "weeks_present": 4, "relayed": false,
+    "evidence": [{"label": "Internal note, 2026-02-20", "url": "../../notes/orbis-packaging.md#L3"}]
+   }
+  ]
+ },
+ {
+  "account": "Vertex Motors",
+  "status": "yellow",
+  "rule_applied": "Open ask unanswered for two weeks",
+  "customer_call_in_window": true,
+  "headline": "Plant manager joined to chase an Excel export asked for on 3 March",
+  "detail": "Promised a date by Friday 13 March. The cycle-time work itself is valued.",
+  "why": [
+   {
+    "reason": "The shift-report export was asked for on 3 March with no answer; the plant manager joined the next call to chase it.",
+    "driver": "unmet_ask", "weeks_present": 2, "relayed": false,
+    "quote": "I'm here because I still don't have the shift report in a file I can use.",
+    "evidence": [
+     {"label": "Weekly, 2026-03-12 (00:25)", "url": "../../transcripts/2026-03-12_vertex-motors_weekly.md#L5"},
+     {"label": "Weekly, 2026-03-03 (01:15)", "url": "../../transcripts/2026-03-03_vertex-motors_weekly.md#L6"}
+    ]
+   }
+  ]
+ }
+]}

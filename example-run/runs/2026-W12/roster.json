@@ -1,0 +1,8 @@
+[
+ {"account": "Acme Foods", "owner": "Marco", "end_date": "2026-05-01", "end_label": "Pilot ends"},
+ {"account": "Corvel Plastics", "owner": "Marco", "end_date": "2026-12-31", "end_label": "Contract ends"},
+ {"account": "Halden Pumps", "owner": "Priya", "end_date": "2027-02-28", "end_label": "Contract ends"},
+ {"account": "Lumen Devices", "owner": "Priya", "end_date": "2026-11-30", "end_label": "Renewal"},
+ {"account": "Orbis Packaging", "owner": "Daniel", "end_date": "2026-09-30", "end_label": "Contract ends"},
+ {"account": "Vertex Motors", "owner": "Daniel", "end_date": "2026-10-15", "end_label": "Renewal"}
+]

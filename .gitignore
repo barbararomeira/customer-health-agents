@@ -1,0 +1,14 @@
+# Your configuration and your customers' data never belong in git.
+# Anchored to the repo root so the committed example-run/ is not swallowed.
+/config.json
+/output/
+/transcripts/
+/notes/
+/roster.json
+.env
+
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/

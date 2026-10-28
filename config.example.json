@@ -1,0 +1,26 @@
+{
+  "_comment": "Copy to config.json (git-ignored) and edit. Paths are relative to the repo root.",
+
+  "rules_version": "v0.2, proposed. Backtested on one account that had already left.",
+  "window_weeks": 4,
+
+  "sources": {
+    "transcripts_dir": "transcripts",
+    "notes_dir": "notes",
+    "roster_file": "roster.json"
+  },
+
+  "output_dir": "output",
+  "accounts_per_agent": 5,
+
+  "internal_speakers": ["Northwind Robotics"],
+  "never_a_risk": [
+    "The customer chose on-premise hosting, so the vendor has no remote access to their data.",
+    "Reports are weekly by design; there is no real-time view."
+  ],
+
+  "models": {
+    "coordinator": "claude-opus-5-5",
+    "account_readers": "claude-sonnet-5-5"
+  }
+}
