@@ -82,7 +82,8 @@ details .src { margin-top: 6px; display: grid; gap: 2px; }
 .trend tbody th { font-weight: 600; }
 .how { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 14px; align-items: start; }
 .how h3 { margin: 0 0 8px; font-size: 15px; }
-.how ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.how ul, .how ol { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.how ol .pill { margin-right: 6px; }
 .how dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: baseline; }
 .how dd { margin: 0; }
 .how .panel { display: grid; gap: 8px; }
@@ -118,6 +119,15 @@ details .src { margin-top: 6px; display: grid; gap: 2px; }
       <dt><span class="pill green">Green</span></dt><dd>Engaged, tone normal or positive, no serious open complaint. Needs at least one customer call in the window.</dd>
       <dt><span class="pill no_signal">No signal</span></dt><dd>No customer call in the last 4 weeks. Internal notes add context but cannot make an account green, because silence is not health.</dd>
     </dl></section>
+  <section class="panel"><h3>How the status is decided</h3>
+    <p class="muted">Checked in this order. The first rule that matches sets the status.</p>
+    <ol>
+      <li><span class="pill no_signal">No signal</span> No customer call in the last 4 weeks.</li>
+      <li><span class="pill red">Red</span> One churn signal, <b>or</b> two strong warning signs that have each lasted 3 weeks or more.</li>
+      <li><span class="pill yellow">Yellow</span> One warning sign, a negative trend younger than 3 weeks, or an open complaint or unanswered ask.</li>
+      <li><span class="pill green">Green</span> At least one customer call, tone normal or positive, and no serious open complaint.</li>
+    </ol>
+    <p class="muted">Implied weights: a churn signal counts 2, a warning sign that has lasted 3+ weeks counts 1, and red starts at 2.</p></section>
   <section class="panel"><h3>What never counts against an account</h3>
     <ul>
       <li>A missing recording with no explanation. It is marked unknown, never a no-show.</li>

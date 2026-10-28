@@ -28,5 +28,9 @@ STRONG_DRIVERS = {"disengagement", "tone", "value_not_proven", "trust_broken", "
 # A strong signal contributes to red only once it has lasted this many weeks of the window.
 MIN_WEEKS_FOR_RED = 3
 
-# How many strong signals, each lasting MIN_WEEKS_FOR_RED, make red without an explicit churn signal.
-MIN_STRONG_SIGNALS_FOR_RED = 2
+# There is no health score, but red has implied weights: an explicit churn signal is worth 2 points,
+# each DIFFERENT strong signal that has lasted MIN_WEEKS_FOR_RED is worth 1, and red starts at 2.
+# So: one churn signal, or two lasting warning signs. Open asks and younger warnings are worth 0.
+CHURN_SIGNAL_POINTS = 2
+LASTING_WARNING_POINTS = 1
+RED_AT_POINTS = 2

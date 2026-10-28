@@ -79,7 +79,8 @@ details .src { margin-top: 6px; display: grid; gap: 2px; }
 .trend tbody th { font-weight: 600; }
 .how { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 14px; align-items: start; }
 .how h3 { margin: 0 0 8px; font-size: 15px; }
-.how ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.how ul, .how ol { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.how ol .pill { margin-right: 6px; }
 .how dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: baseline; }
 .how dd { margin: 0; }
 .how .panel { display: grid; gap: 8px; }

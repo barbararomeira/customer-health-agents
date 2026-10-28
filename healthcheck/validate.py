@@ -9,7 +9,8 @@ Errors block the build. Warnings are printed and do not.
 import os
 import re
 
-from .rules import DRIVERS, MIN_STRONG_SIGNALS_FOR_RED, MIN_WEEKS_FOR_RED, STATUSES, STRONG_DRIVERS
+from .rules import (CHURN_SIGNAL_POINTS, DRIVERS, LASTING_WARNING_POINTS, MIN_WEEKS_FOR_RED, RED_AT_POINTS,
+                    STATUSES, STRONG_DRIVERS)
 
 HEADLINE_WORDS = 15
 
@@ -28,18 +29,17 @@ def _local_source(url, base_dir):
     return path if os.path.isfile(path) else None
 
 
-def _red_allowed(why):
-    """Red needs one explicit churn signal, or enough strong signals that have lasted long enough.
+def red_points(why):
+    """The implied weights behind red: churn signal 2, each different lasting warning sign 1.
 
     Relayed statements (a colleague passing on what the customer said) can support red but never
-    make it alone, so they are left out of both counts.
+    make it alone, so they score nothing.
     """
     direct = [w for w in why if not w.get("relayed")]
-    if any(w.get("driver") == "churn_signal" for w in direct):
-        return True
+    churn = CHURN_SIGNAL_POINTS if any(w.get("driver") == "churn_signal" for w in direct) else 0
     lasting = {w["driver"] for w in direct
                if w.get("driver") in STRONG_DRIVERS and (w.get("weeks_present") or 0) >= MIN_WEEKS_FOR_RED}
-    return len(lasting) >= MIN_STRONG_SIGNALS_FOR_RED
+    return churn + LASTING_WARNING_POINTS * len(lasting)
 
 
 def validate_account(a, base_dir="."):
@@ -67,18 +67,20 @@ def validate_account(a, base_dir="."):
         if quote and local and not any(_norm(quote) in _norm(open(s, encoding="utf-8").read()) for s in local):
             err(f"reason {i} quote is not verbatim in any cited transcript")
 
+    # The checks run in order and the first match sets the status. First: no customer call in the
+    # window means no signal, whatever else the notes say.
+    if not a.get("customer_call_in_window") and status != "no_signal":
+        err(f"{status} without a customer call in the window: the first check makes it no signal")
+
     if status in ("red", "yellow") and not why:
         err(f"{status} with no reason")
 
     if status == "red":
-        if not _red_allowed(why):
-            err("red without an explicit churn signal or "
-                f"{MIN_STRONG_SIGNALS_FOR_RED} strong signals lasting {MIN_WEEKS_FOR_RED}+ weeks")
+        if red_points(why) < RED_AT_POINTS:
+            err(f"red without an explicit churn signal or two strong signals lasting {MIN_WEEKS_FOR_RED}+ weeks "
+                f"({red_points(why)} of {RED_AT_POINTS} points)")
         if not any(w.get("quote") for w in why if not w.get("relayed")):
             err("red without a verbatim customer quote")
-
-    if status == "green" and not a.get("customer_call_in_window"):
-        err("green without a customer call in the window (silence is not health)")
 
     if status != "no_signal" and not a.get("headline"):
         err("no headline")

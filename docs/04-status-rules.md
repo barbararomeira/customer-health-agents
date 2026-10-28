@@ -20,6 +20,34 @@ of the board and used for backtests.
 The last 4 full weeks up to the run date (`window_weeks` in the config). "This week" is the most
 recent 7 days.
 
+## How the status is decided
+
+The checks run in this order. **The first one that matches sets the status.**
+
+1. **No signal**: no customer call in the window.
+2. **Red**: one explicit churn signal, **or** two strong warning signs that have each lasted 3+ weeks.
+3. **Yellow**: one warning sign, a negative trend younger than 3 weeks, or an open complaint or
+   unanswered ask.
+4. **Green**: at least one customer call, tone normal or positive, no serious open complaint.
+
+No signal comes first on purpose: without the customer's voice, nothing else can be judged, and
+internal notes can't stand in for it.
+
+**Implied weights.** There is no score, but red behaves as if there were one: an explicit churn
+signal counts **2**, each different warning sign that has lasted 3+ weeks counts **1**, and red
+starts at **2**. Open asks and warnings younger than 3 weeks count 0, so they can only reach yellow.
+
+## Inputs and how far each can push an account
+
+| Input | Source | Used for | Can push an account to |
+|---|---|---|---|
+| Customer call transcripts, last 4 weeks | Every call recorder the team uses. Full transcripts, not summaries | Main evidence: churn signals, warning signs, tone, open asks | **Red** |
+| Who speaks on calls | Transcript speakers. Calendar invitees don't count | The "disengaging" warning sign | **Red**, as 1 of 2 warning signs |
+| Contract, pilot/POC and decision end dates | The account tracker | "No value" and "value not proven" count only if a date is within 90 days | Gate on other signals |
+| Account owners' notes | The account tracker: blockers, last update, delay reasons | Context, plus "stuck" (installed 12+ weeks, not delivering) | **Yellow**, never green alone |
+| Internal calls about the account | Call recorder | Context only. Not the customer's voice | Nothing |
+| Product usage | Product analytics | Not connected yet | Nothing yet |
+
 ## Statuses
 
 ### Red: would likely churn without escalation
@@ -55,7 +83,8 @@ end, or a named decision meeting. Not only the renewal date.
 
 - any single strong signal, or a clear negative trend that has not yet lasted 3 weeks
 - an open complaint or repeated ask that nobody has answered
-- 3+ weeks of expected customer meetings with no recording and no explanation
+- 3+ weeks of expected customer meetings with no recording and no explanation, while other calls
+  in the window were recorded (with no call at all, the first check already made it no signal)
 - a customer statement relayed internally (marked as relayed, with its source) that points to
   risk. **Relayed statements can support red but never make it red on their own.**
 
@@ -113,31 +142,35 @@ thresholds: they were set by judgement and checked against one backtest
 | Number | Meaning | Where |
 |---|---|---|
 | **4 weeks** | The window: the last 4 full weeks up to the run date | `window_weeks` in `config.json` |
+| **Order** | No signal → red → yellow → green; the first match wins. Code enforces the first step: no customer call means no signal | `validate_account` in `healthcheck/validate.py` |
+| **2 / 1 / 2 points** | Implied weights: churn signal 2, each different lasting warning sign 1, red at 2 | `CHURN_SIGNAL_POINTS`, `LASTING_WARNING_POINTS`, `RED_AT_POINTS` in `healthcheck/rules.py` |
 | **3 weeks** | A strong signal must be present in 3 of the 4 weeks before it counts toward red | `MIN_WEEKS_FOR_RED` in `healthcheck/rules.py` |
-| **2 signals** | Without an explicit churn signal, red needs this many *different* strong drivers, each lasting 3 weeks. The same driver twice counts once | `MIN_STRONG_SIGNALS_FOR_RED` in `healthcheck/rules.py` |
 | **90 days** | "No value" or "value not proven" only escalates when the nearest end date is this close | applied by the agent (the date comparison needs the call's context) |
 | **12 weeks** | Installed this long and not really delivering = "stuck" | applied by the agent |
 | **15 words** | Headline length. Longer is a warning, not an error | `HEADLINE_WORDS` in `healthcheck/validate.py` |
 | **2 accounts** | A reason on this many red/yellow accounts shows under *Recurring reasons* | `recurring_reasons` in `healthcheck/board.py` |
 | **12 / 52 weeks** | The trend tab shows 12 weekly columns; the summary column counts the last 52 runs | `render` in `healthcheck/board.py` |
 
-The red rule as code (`_red_allowed` in `healthcheck/validate.py`):
+The red rule as code (`red_points` in `healthcheck/validate.py`):
 
 ```
 direct  = reasons that are not relayed
-red is allowed if
-    any direct reason has driver = churn_signal
- or count of DISTINCT drivers among direct reasons where
-        driver ∈ {disengagement, tone, value_not_proven, trust_broken, stuck}
-        and weeks_present ≥ 3
-    is ≥ 2
-and at least one direct reason carries a verbatim quote
+points  = 2  if any direct reason has driver = churn_signal
+        + 1  for each DISTINCT driver among direct reasons where
+               driver ∈ {disengagement, tone, value_not_proven, trust_broken, stuck}
+               and weeks_present ≥ 3
+red is allowed if points ≥ 2
+            and at least one direct reason carries a verbatim quote
 ```
 
-Green is allowed only if `customer_call_in_window` is true. Days to the end date are
+Any status other than no signal needs `customer_call_in_window` to be true. Days to the end date are
 `end_date − run_date`, shown only when not negative.
 
 ## Changelog
+
+- **v0.2, later the same week.** Wrote down the order of the checks (no signal first) and the
+  implied weights, and listed every input with how far it can push an account. No status changed.
+  A v0.3 is proposed in [07-proposed-v0.3.md](07-proposed-v0.3.md).
 
 - **v0.2.** Backtest on an account that had already left. v0.1 gave **zero weeks of warning**: no
   customer call had been recorded for months, "value not proven" was tied to a renewal that was

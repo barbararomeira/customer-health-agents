@@ -45,6 +45,7 @@ against the same rules.
 | 4 | [**The status rules**](docs/04-status-rules.md) | The full v0.2 rules |
 | 5 | [**Backtesting**](docs/05-backtesting.md) | v0.1 gave zero weeks of warning on a real churn. What it missed, what changed, and how to backtest |
 | 6 | [**How the weekly run was designed**](docs/06-how-the-run-worked.md) | Agent roles, one finding, the board, the weekly rhythm |
+| 7 | [**Proposed for v0.3**](docs/07-proposed-v0.3.md) | Not applied yet: orange for "wrong and the contract ends soon", renewal tags, a go-live clock for onboarding accounts, a 12-week tone baseline |
 | | [**Decisions**](DECISIONS.md) | 12 choices, each with what we considered and what it costs |
 | | [**Worked example**](example-run/) | Six invented accounts, their calls, the findings and the board |
 | | [**Agent prompt**](prompts/weekly.md) | The rules turned into instructions for the coordinator and the account readers |
@@ -72,8 +73,10 @@ separate step, so a person sees every new red first ([Decision 9](DECISIONS.md#9
 
 ## The ideas in one screen
 
-- **Red is rare and rule-based.** One explicit churn signal, or two strong warning signs that have
-  each lasted three of the last four weeks. When in doubt, yellow.
+- **Checks run in order: no signal → red → yellow → green.** The first match wins.
+- **Red is rare and rule-based.** One explicit churn signal (2 points), or two different warning
+  signs that have each lasted three of the last four weeks (1 point each); red starts at 2. When in
+  doubt, yellow.
 - **Silence isn't health.** No customer call in the window means *no signal*, never green.
 - **Attendance is who speaks**, not who was on the invite.
 - **Tone is compared with the same customer**, never with other customers.

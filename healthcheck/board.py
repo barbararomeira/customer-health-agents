@@ -166,6 +166,15 @@ def render(accounts, roster, history, week_key, run_date, cfg):
       <dt><span class="pill green">Green</span></dt><dd>Engaged, tone normal or positive, no serious open complaint. Needs at least one customer call in the window.</dd>
       <dt><span class="pill no_signal">No signal</span></dt><dd>No customer call in the last {window} weeks. Internal notes add context but cannot make an account green, because silence is not health.</dd>
     </dl></section>
+  <section class="panel"><h3>How the status is decided</h3>
+    <p class="muted">Checked in this order. The first rule that matches sets the status.</p>
+    <ol>
+      <li><span class="pill no_signal">No signal</span> No customer call in the last {window} weeks.</li>
+      <li><span class="pill red">Red</span> One churn signal, <b>or</b> two strong warning signs that have each lasted 3 weeks or more.</li>
+      <li><span class="pill yellow">Yellow</span> One warning sign, a negative trend younger than 3 weeks, or an open complaint or unanswered ask.</li>
+      <li><span class="pill green">Green</span> At least one customer call, tone normal or positive, and no serious open complaint.</li>
+    </ol>
+    <p class="muted">Implied weights: a churn signal counts 2, a warning sign that has lasted 3+ weeks counts 1, and red starts at 2.</p></section>
   <section class="panel"><h3>What never counts against an account</h3>
     <ul>
       <li>A missing recording with no explanation. It is marked unknown, never a no-show.</li>

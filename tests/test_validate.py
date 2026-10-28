@@ -64,8 +64,19 @@ def test_red_needs_a_quote():
 
 # --- green and no signal -----------------------------------------------------------------------
 
-def test_green_without_a_customer_call_fails():
-    assert any("silence is not health" in x for x in errors(account("green", [], call=False)))
+def test_without_a_customer_call_the_only_status_is_no_signal():
+    """The first check: silence is not health, and it is not yellow or red either."""
+    for status in ("green", "yellow", "red"):
+        why = [reason("churn_signal", quote="we won't renew")]
+        assert any("first check makes it no signal" in x for x in errors(account(status, why, call=False)))
+
+
+def test_red_points_follow_the_implied_weights():
+    from healthcheck.validate import red_points
+    assert red_points([reason("churn_signal")]) == 2
+    assert red_points([reason("tone", 3), reason("stuck", 5)]) == 2
+    assert red_points([reason("tone", 3), reason("stuck", 2), reason("unmet_ask", 9)]) == 1
+    assert red_points([reason("churn_signal", relayed=True), reason("tone", 3, relayed=True)]) == 0
 
 
 def test_no_signal_without_a_call_passes():
