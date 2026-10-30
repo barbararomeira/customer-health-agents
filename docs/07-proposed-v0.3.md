@@ -22,8 +22,14 @@ and appears in a **"Renewals in the next 90 days"** strip at the top of the boar
 healthy account with a renewal next month still needs someone to run the renewal; it just doesn't
 need an escalation.
 
-End dates come from the sales pipeline (close date plus committed term) and the CRM renewal date
-once it is reliably filled in.
+**Which end date, by contract type:**
+
+- **A pilot/POC or a new contract** ends at **go-live date plus committed term**. So it has **no end
+  date until it goes live**: an account stuck before go-live is not "safe until the contract ends",
+  it is judged on the go-live clock (section 3).
+- **A renewal contract** uses the dates of the renewal contract itself.
+
+Take the dates from wherever contracts live for you (a sales pipeline, a CRM, a contracts sheet).
 
 ## 3. Onboarding accounts are judged on the go-live clock
 
