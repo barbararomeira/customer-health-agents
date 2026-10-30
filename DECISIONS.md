@@ -204,3 +204,41 @@ An unanswered ask is still a reason, written as what the customer is waiting for
 "live accounts" filter removes exactly those.
 
 **Implementation status:** guidance. The roster is yours to build.
+
+---
+
+## 13. Colour is risk; timing is a tag
+
+**Chose (proposed for v0.3):** a contract that ends soon doesn't change an account's colour on its
+own. Every account within 90 days of its end date gets a "Renews in X days" tag and appears in a
+renewals strip, green ones included. Only a *problem plus* a near end date changes the colour
+(orange).
+
+**Considered:** making every account near renewal yellow, because "coming up to renewal deserves
+more focus". Also: treating out of contract as "already too late".
+
+**Why:** focus isn't health. A happy customer whose contract ends next month needs someone to run
+the renewal, not an escalation. And if yellow meant both "something is wrong" and "renewal is
+coming", nobody could read it. "Too late" is wrong in the other direction: one account was out of
+contract while its plant manager was positive and a bridge contract was pending. Writing it off
+would have lost a saveable account. So out of contract with nothing signed is **red** (escalate
+now), not a lost cause.
+
+**Implementation status:** proposal only, in [docs/07-proposed-v0.3.md](docs/07-proposed-v0.3.md).
+The code still follows v0.2.
+
+---
+
+## 14. Onboarding accounts are judged on the go-live clock, not on calls
+
+**Chose (proposed for v0.3):** accounts that are installed but not fully live are judged on how
+long go-live is taking. Few customer calls during setup and training are expected and are not
+"no signal" for the first 5 weeks.
+
+**Why:** under v0.2, an account in training with no calls shows grey, and one that is a month late
+going live can still look green. Neither tells you the real risk, which is a slow go-live: that's
+where dissatisfaction builds unseen. And a partial go-live is not a go-live: something the customer
+bought is still missing.
+
+**Implementation status:** proposal only. The 4 / 5 / 12-week numbers are team targets, not
+measured.

@@ -50,6 +50,38 @@ volume.
 - The **last 12 weeks** give each customer's baseline for tone and attendance, and catch slow
   patterns, such as a sponsor or leadership gradually dropping out of meetings.
 
+## 5. Check the dates before you trust them
+
+The contract dates turned out to be the weakest input, and the rules lean on them hard (the
+90-day window, "past its end date = red"). What checking them found, and what to do about it:
+
+- **The CRM may not have them.** The renewal-date field was filled for very few accounts, and two
+  similar fields were used inconsistently (one on older deals, the other on newer ones). Find
+  where contract dates *actually* live before writing a rule that depends on them.
+- **Cross-check every computed date against the calls.** Close date plus term gave several accounts
+  "past their end date". For three of them that clashed with what the customer had said on a
+  call. The rule in section 2 (POC/new contract = go-live + term) fixed most of the clashes.
+- **A tracker formula can be wrong for one contract type.** Here, the renewal date was computed
+  correctly for first contracts and wrongly for renewals. Test the formula on one contract of
+  each type.
+- **Fix the data before turning the rule on.** Send each account owner the list of accounts past
+  their end date (renewed, extended, quote out, or really lapsed?) and only then let "past end
+  date = red" run. Otherwise the first board marks renewed accounts red.
+- **Look for a parallel health score.** The sales pipeline already had its own health score and
+  churn-risk fields. Two health measures that disagree undermine both. Decide which one is the
+  record.
+
+## 6. What to expect from the first v0.3 board
+
+It will look much worse than v0.2, and that is the rules working, not the accounts collapsing:
+
+- every account past an end date with nothing signed goes red at once;
+- the 5-week go-live rule flags most onboarding accounts straight away, because few go live in 4;
+- every partial go-live keeps its clock running, including accounts that have been "partially live"
+  for a year.
+
+Say this to the team before publishing it.
+
 ## What would change in the code
 
 - `STATUSES` gains `orange`; the board gets an orange section and pill.
@@ -60,7 +92,27 @@ volume.
 
 ## Open questions
 
+- **When does a renewal term start: at signing, or when the previous term ends?** One renewal was
+  signed mid-year for 12 months, while the customer said the contract ends 12 months after the
+  original go-live. The answer decides the end date of every renewal.
+- **Partial go-live:** proposed that it *starts* the contract term but does *not* stop the
+  onboarding clock. Not confirmed.
+
 - Is orange a separate escalation path, or a yellow with a deadline? If the response is the same,
   it should be a tag, not a colour.
 - The 4 / 5 / 12-week onboarding numbers are targets the team chose, not measured from past
   go-lives. Check them against the actual installation-to-go-live history before using them.
+
+## Weaknesses of v0.2 that v0.3 doesn't fix yet
+
+Raised while writing down the weights. Not solved here:
+
+- **Yellow is too broad.** In the first real run, half the accounts were yellow. A status that
+  covers half the base stops telling anyone where to look.
+- **"Stuck" never escalates on its own**, however long it lasts. One strong signal is yellow
+  forever. The go-live clock (section 3) is a partial answer for onboarding accounts only.
+- **The line between "says there's no value" (a churn signal, 2 points) and "questions the value"
+  (a warning sign, 1 point) is fragile.** It's one reader's judgement of one sentence, and it
+  decides between red and yellow.
+- **Numeric weights would look more precise than the inputs are.** That's why the weights stay
+  implied (2 / 1 / red at 2) and never become a score on the board.
