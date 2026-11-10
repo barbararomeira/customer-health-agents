@@ -26,7 +26,7 @@ and whether the current rules use it.
 | Signal | What it tells you | How it misleads | Use |
 |---|---|---|---|
 | **Cancelled or no-show recurring meetings** | Disengagement | **A missing recording is not a no-show.** The recorder wasn't invited, a different link was used, the meeting moved to the shop floor. Only count it when notes confirm it | ✅ when confirmed |
-| **Weeks with no customer call at all** | We don't know | Read as "all fine" by default. That is the trap | ✅ → *no signal* status |
+| **Weeks with no customer call at all** | We don't know | Read as "all fine" by default. That is the trap | ✅ → never green; a yellow reason (*no signal* status until v0.4) |
 | **Customer reply latency** (email, chat) | Responsiveness | Holidays, shutdowns, time zones | ⏳ |
 | **Meeting cadence changes** (weekly → monthly) | Lower priority, or a calmer phase | Often agreed and healthy. Check the reason | 🟡 |
 
@@ -34,8 +34,8 @@ and whether the current rules use it.
 
 | Signal | What it tells you | How it misleads | Use |
 |---|---|---|---|
-| **Logins, active users, report opens** | Whether anyone uses it day to day | A shop-floor screen watched by 20 people is one login | ⏳ wanted |
-| **Usage trend vs the account's own baseline** | Usage falling away | Seasonal shutdowns, line rebuilds | ⏳ |
+| **Days used, user-days (open + click)** | Whether anyone uses it day to day | A shop-floor screen watched by 20 people is one login, and a screen left open makes page views look huge. Count people who click | 🟡 v0.4 proposal: engagement ([8](08-product-usage.md)) |
+| **Usage trend vs the account's own baseline** | Usage falling away | Seasonal shutdowns, line rebuilds, and customers who get their results by daily report and have no reason to log in | 🟡 v0.4 proposal: only a collapse counts against ([8](08-product-usage.md)) |
 | **Data-quality incidents** | Whether what we show is right | Our internal incident ≠ the customer noticing | 🟡 |
 | **Time from installation to go-live** | Delivery stuck | The go-live date field is often filled in optimistically. Judge by real delivery | ✅ "stuck" (12+ weeks) |
 

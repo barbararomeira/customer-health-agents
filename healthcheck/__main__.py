@@ -1,7 +1,7 @@
 """python3 -m healthcheck <run_dir> [--date YYYY-MM-DD] [--config config.json]
 
 Reads   <run_dir>/findings_*.json   one file per agent group, {"accounts": [...]}
-        <run_dir>/roster.json       every installed account: owner, nearest end date
+        <run_dir>/roster.json       every installed account: owner, nearest end date (drives orange and the Contract tag)
         <run_dir>/overrides.json    optional: a reviewer's status changes, applied before validation
 Writes  <run_dir>/board.html, <run_dir>/status.json, and <run_dir>/../history.json
 
@@ -49,7 +49,7 @@ def main(argv=None):
     for a in accounts:
         a.update(overrides.get(a["account"], {}))
 
-    errors, warnings = validate(accounts, roster, base_dir=run_dir)
+    errors, warnings = validate(accounts, roster, base_dir=run_dir, run_date=args.date)
     for w in warnings:
         print("warning:", w)
     if errors:
@@ -69,7 +69,7 @@ def main(argv=None):
     with open(hist_path, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=1, ensure_ascii=False)
 
-    counts = {s: sum(a["status"] == s for a in accounts) for s in ("red", "yellow", "green", "no_signal")}
+    counts = {s: sum(a["status"] == s for a in accounts) for s in ("red", "orange", "yellow", "green")}
     print(counts, "->", os.path.join(run_dir, "board.html"))
     return 0
 

@@ -24,17 +24,19 @@ Three consequences:
 - **Account owners**: what is off on their own accounts, written about the customer, never about them.
 - **Leadership**: the short list of reds and what each escalation needs.
 
-## The four statuses
+## The four colours
 
-| Status | Meaning |
+| Colour | Meaning |
 |---|---|
 | **Red** | Would likely churn without escalation |
+| **Orange** | Something is wrong, and the contract, pilot or renewal ends within 90 days |
 | **Yellow** | Something is off, not at escalation level |
 | **Green** | Healthy, and we actually heard from the customer |
-| **No signal** | No customer call in the window, so we cannot tell |
 
-The fourth status is the most important design choice in the whole project. See
-[05-backtesting.md](05-backtesting.md) for why.
+The most important design choice in the whole project is that **silence is never green**: no
+customer call in the window makes an account yellow at most. See [05-backtesting.md](05-backtesting.md)
+for why. (Up to v0.4 this was a separate "no signal" status; in v0.5 it became a yellow reason, so
+the board has four colours and nothing else.)
 
 ## Scope: every installed account
 

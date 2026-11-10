@@ -58,13 +58,16 @@ context. `weeks_present` and `relayed` are what make the red rule checkable.
 
 One page per week ([example](../example-run/runs/2026-W12/board.html)):
 
-- **Red** in full: headline, up to three reasons with quotes, the end date with days left, and what
-  the escalation should ask for.
-- **Yellow** and **no signal** as short cards: headline, one line, folded sources.
-- **Green** as names only. Nobody needs to read the greens.
-- **Recurring reasons**: any reason on two or more flagged accounts, which is a product problem,
-  not an account problem.
-- **Weekly trend**: every account's status for 12 weeks, and since when.
+- **Red** in full: topic tags, headline, up to three reasons with quotes, and what the escalation
+  should ask for.
+- **Orange**, **yellow** and **green** as short cards: topic tags, headline, one line, folded
+  sources.
+- **Weekly trend**: every account's colour for 12 weeks, and since when.
+
+Every card says why with at most one tag per topic (Leaving, Contract, Tone, Product use, Go-live,
+Improvements). Until v0.5 the board also had a "no signal" section, a renewals strip and a
+recurring-reasons panel; all three were removed because the board's owner wanted four colours and
+why, nothing else ([Decision 16](../DECISIONS.md)).
 
 No charts and no scores, on purpose.
 

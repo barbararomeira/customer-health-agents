@@ -10,7 +10,7 @@ at all**. Three reasons, each a lesson:
 
 | What happened | Why the rules missed it | Change in v0.2 |
 |---|---|---|
-| No customer call had been recorded for months | With no calls, there were no negative signals, so the account looked fine | **No signal** became its own status, and **green needs a customer call**. Silence isn't health |
+| No customer call had been recorded for months | With no calls, there were no negative signals, so the account looked fine | **No signal** became its own status (a yellow reason since v0.5), and **green needs a customer call**. Silence isn't health |
 | The customer said in calls that it wasn't giving them value | "Value not proven" only fired near the **renewal** date, which was months away. The customer actually decided at the **end of the trial phase** | Every 90-day rule uses the **nearest end date**: contract, renewal, pilot/POC end or a named decision meeting |
 | The account was installed but never really delivered | "Stuck" trusted the go-live date field, which had been filled in | "Stuck" is judged on **real delivery**, not the field |
 

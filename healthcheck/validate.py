@@ -8,9 +8,10 @@ Errors block the build. Warnings are printed and do not.
 """
 import os
 import re
+from datetime import date
 
-from .rules import (CHURN_SIGNAL_POINTS, DRIVERS, LASTING_WARNING_POINTS, MIN_WEEKS_FOR_RED, RED_AT_POINTS,
-                    STATUSES, STRONG_DRIVERS)
+from .rules import (CHURN_SIGNAL_POINTS, DRIVERS, LASTING_WARNING_POINTS, MIN_WEEKS_FOR_RED, ORANGE_WITHIN_DAYS,
+                    RED_AT_POINTS, STATUSES, STRONG_DRIVERS)
 
 HEADLINE_WORDS = 15
 
@@ -29,20 +30,29 @@ def _local_source(url, base_dir):
     return path if os.path.isfile(path) else None
 
 
+def days_to_end(roster_row, run_date):
+    """Days from the run date to the account's nearest end date (negative = passed), or None."""
+    if not roster_row or not roster_row.get("end_date") or not run_date:
+        return None
+    return (date.fromisoformat(roster_row["end_date"]) - date.fromisoformat(run_date)).days
+
+
 def red_points(why):
-    """The implied weights behind red: churn signal 2, each different lasting warning sign 1.
+    """The implied weights behind red: churn signal or confirmed exit 2, each different lasting warning sign 1.
 
     Relayed statements (a colleague passing on what the customer said) can support red but never
-    make it alone, so they score nothing.
+    make it alone, so they score nothing. The exception is a hard fact about leaving (our equipment
+    is being removed): it counts in full wherever it was written down.
     """
     direct = [w for w in why if not w.get("relayed")]
-    churn = CHURN_SIGNAL_POINTS if any(w.get("driver") == "churn_signal" for w in direct) else 0
+    churn = CHURN_SIGNAL_POINTS if (any(w.get("driver") == "churn_signal" for w in direct)
+                                    or any(w.get("driver") == "leaving" for w in why)) else 0
     lasting = {w["driver"] for w in direct
                if w.get("driver") in STRONG_DRIVERS and (w.get("weeks_present") or 0) >= MIN_WEEKS_FOR_RED}
     return churn + LASTING_WARNING_POINTS * len(lasting)
 
 
-def validate_account(a, base_dir="."):
+def validate_account(a, base_dir=".", roster_row=None, run_date=None):
     errors, warnings = [], []
     name = a.get("account") or "<no name>"
     status = a.get("status")
@@ -67,22 +77,27 @@ def validate_account(a, base_dir="."):
         if quote and local and not any(_norm(quote) in _norm(open(s, encoding="utf-8").read()) for s in local):
             err(f"reason {i} quote is not verbatim in any cited transcript")
 
-    # The checks run in order and the first match sets the status. First: no customer call in the
-    # window means no signal, whatever else the notes say.
-    if not a.get("customer_call_in_window") and status != "no_signal":
-        err(f"{status} without a customer call in the window: the first check makes it no signal")
+    # Silence is not health: without a customer call in the window an account can't be green.
+    if not a.get("customer_call_in_window") and status == "green":
+        err("green without a customer call in the window: silence is not health, so it is yellow at most")
 
-    if status in ("red", "yellow") and not why:
+    if status in ("red", "orange", "yellow") and not why and a.get("customer_call_in_window"):
         err(f"{status} with no reason")
+
+    if status == "orange":
+        d = days_to_end(roster_row, run_date)
+        if d is None or d > ORANGE_WITHIN_DAYS:
+            err(f"orange needs an end date within {ORANGE_WITHIN_DAYS} days (or passed); "
+                f"{'none in the roster' if d is None else f'{d} days away'}")
 
     if status == "red":
         if red_points(why) < RED_AT_POINTS:
             err(f"red without an explicit churn signal or two strong signals lasting {MIN_WEEKS_FOR_RED}+ weeks "
                 f"({red_points(why)} of {RED_AT_POINTS} points)")
-        if not any(w.get("quote") for w in why if not w.get("relayed")):
-            err("red without a verbatim customer quote")
+        if not any(w.get("quote") for w in why if not w.get("relayed") or w.get("driver") == "leaving"):
+            err("red without a verbatim customer quote (or the written exit fact)")
 
-    if status != "no_signal" and not a.get("headline"):
+    if not a.get("headline"):
         err("no headline")
     elif a.get("headline") and len(a["headline"].split()) > HEADLINE_WORDS:
         warnings.append(f"{name}: headline is {len(a['headline'].split())} words (aim for {HEADLINE_WORDS} or fewer)")
@@ -90,14 +105,15 @@ def validate_account(a, base_dir="."):
     return errors, warnings
 
 
-def validate(accounts, roster=None, base_dir="."):
+def validate(accounts, roster=None, base_dir=".", run_date=None):
     errors, warnings = [], []
     seen = set()
     for a in accounts:
         if a.get("account") in seen:
             errors.append(f"{a.get('account')}: appears twice in the findings")
         seen.add(a.get("account"))
-        e, w = validate_account(a, base_dir)
+        row = next((r for r in roster or [] if r["account"] == a.get("account")), None)
+        e, w = validate_account(a, base_dir, row, run_date)
         errors += e
         warnings += w
     for r in roster or []:

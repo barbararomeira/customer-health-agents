@@ -1,7 +1,7 @@
 {
   "_comment": "Copy to config.json (git-ignored) and edit. Paths are relative to the repo root.",
 
-  "rules_version": "v0.2, proposed. Backtested on one account that had already left.",
+  "rules_version": "v0.6: four colours, six why-topics, product use, team-chat hard facts. Backtested on one account that had already left; run weekly on a real installed base since v0.2.",
   "window_weeks": 4,
 
   "sources": {

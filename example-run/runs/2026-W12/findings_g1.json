@@ -1,78 +1,146 @@
-{"accounts": [
- {
-  "account": "Acme Foods",
-  "status": "red",
-  "rule_applied": "Explicit churn signal: no value, and the pilot ends in 46 days",
-  "customer_call_in_window": true,
-  "headline": "Operations director says nothing is usable, and the pilot ends 1 May",
-  "detail": "Says our downtime report duplicates their own system; packing counts are still wrong.",
-  "why": [
-   {
-    "reason": "The operations director said the pilot has produced nothing usable and that they will not continue unless the board sees something different by the pilot end.",
-    "driver": "churn_signal", "weeks_present": 1, "relayed": false,
-    "quote": "If I can't show the board something different by then, we won't continue.",
-    "evidence": [{"label": "Pilot review, 2026-03-10 (03:20)", "url": "../../transcripts/2026-03-10_acme-foods_pilot-review.md#L10"}]
-   },
-   {
-    "reason": "The downtime report is seen as a copy of what their own system already shows.",
-    "driver": "value_not_proven", "weeks_present": 3, "relayed": false,
-    "quote": "It duplicates what we have.",
-    "evidence": [
-     {"label": "Pilot review, 2026-03-10 (01:02)", "url": "../../transcripts/2026-03-10_acme-foods_pilot-review.md#L7"},
-     {"label": "Weekly, 2026-02-24 (01:50)", "url": "../../transcripts/2026-02-24_acme-foods_weekly.md#L7"}
-    ]
-   },
-   {
-    "reason": "Packing-station counts were wrong in two separate weeks and the line team stopped checking them.",
-    "driver": "trust_broken", "weeks_present": 3, "relayed": false,
-    "quote": "My team stopped checking them.",
-    "evidence": [
-     {"label": "Pilot review, 2026-03-10 (01:30)", "url": "../../transcripts/2026-03-10_acme-foods_pilot-review.md#L8"},
-     {"label": "Weekly, 2026-02-24 (00:10)", "url": "../../transcripts/2026-02-24_acme-foods_weekly.md#L5"}
-    ]
+{
+ "accounts": [
+  {
+   "account": "Acme Foods",
+   "status": "red",
+   "rule_applied": "Explicit churn signal: no value, and the pilot ends in 46 days",
+   "customer_call_in_window": true,
+   "headline": "Operations director says nothing is usable, and the pilot ends 1 May",
+   "detail": "Says our downtime report duplicates their own system; packing counts are still wrong.",
+   "why": [
+    {
+     "reason": "The operations director said the pilot has produced nothing usable and that they will not continue unless the board sees something different by the pilot end.",
+     "driver": "churn_signal",
+     "weeks_present": 1,
+     "relayed": false,
+     "quote": "If I can't show the board something different by then, we won't continue.",
+     "evidence": [
+      {
+       "label": "Pilot review, 2026-03-10 (03:20)",
+       "url": "../../transcripts/2026-03-10_acme-foods_pilot-review.md#L10"
+      }
+     ]
+    },
+    {
+     "reason": "The downtime report is seen as a copy of what their own system already shows.",
+     "driver": "value_not_proven",
+     "weeks_present": 3,
+     "relayed": false,
+     "quote": "It duplicates what we have.",
+     "evidence": [
+      {
+       "label": "Pilot review, 2026-03-10 (01:02)",
+       "url": "../../transcripts/2026-03-10_acme-foods_pilot-review.md#L7"
+      },
+      {
+       "label": "Weekly, 2026-02-24 (01:50)",
+       "url": "../../transcripts/2026-02-24_acme-foods_weekly.md#L7"
+      }
+     ]
+    },
+    {
+     "reason": "Packing-station counts were wrong in two separate weeks and the line team stopped checking them.",
+     "driver": "trust_broken",
+     "weeks_present": 3,
+     "relayed": false,
+     "quote": "My team stopped checking them.",
+     "evidence": [
+      {
+       "label": "Pilot review, 2026-03-10 (01:30)",
+       "url": "../../transcripts/2026-03-10_acme-foods_pilot-review.md#L8"
+      },
+      {
+       "label": "Weekly, 2026-02-24 (00:10)",
+       "url": "../../transcripts/2026-02-24_acme-foods_weekly.md#L5"
+      }
+     ]
+    }
+   ],
+   "support_needed": "A leadership call before 1 April with one result the customer's own system cannot show, and the packing-count fix confirmed on site.",
+   "tone": "worse",
+   "usage": {
+    "use": "none",
+    "meant_to_use": true
    }
-  ],
-  "support_needed": "A leadership call before 1 April with one result the customer's own system cannot show, and the packing-count fix confirmed on site."
- },
- {
-  "account": "Corvel Plastics",
-  "status": "yellow",
-  "rule_applied": "Relayed statement pointing to risk (cannot make red alone)",
-  "customer_call_in_window": true,
-  "headline": "Procurement is asking how many licences they really need next year",
-  "detail": "Relayed after the call, not said on it. The engineer's own feedback is positive.",
-  "why": [
-   {
-    "reason": "After the call, the production engineer mentioned that procurement asked how many licences they really need next year.",
-    "driver": "value_not_proven", "weeks_present": 1, "relayed": true,
-    "evidence": [{"label": "Internal note, 2026-03-11", "url": "../../notes/corvel-plastics.md#L3"}]
+  },
+  {
+   "account": "Corvel Plastics",
+   "status": "yellow",
+   "rule_applied": "Relayed statement pointing to risk (cannot make red alone)",
+   "customer_call_in_window": true,
+   "headline": "Procurement is asking how many licences they really need next year",
+   "detail": "Relayed after the call, not said on it. The engineer's own feedback is positive.",
+   "why": [
+    {
+     "reason": "After the call, the production engineer mentioned that procurement asked how many licences they really need next year.",
+     "driver": "value_not_proven",
+     "weeks_present": 1,
+     "relayed": true,
+     "evidence": [
+      {
+       "label": "Internal note, 2026-03-11",
+       "url": "../../notes/corvel-plastics.md#L3"
+      }
+     ]
+    },
+    {
+     "reason": "On the recorded call the line is stable and stop clips were used in two root-cause sessions.",
+     "driver": "other",
+     "weeks_present": 1,
+     "relayed": false,
+     "quote": "We used the stop clips in two root-cause sessions this week.",
+     "evidence": [
+      {
+       "label": "Weekly, 2026-03-09 (00:12)",
+       "url": "../../transcripts/2026-03-09_corvel-plastics_weekly.md#L5"
+      }
+     ]
+    }
+   ],
+   "tone": "same",
+   "usage": {
+    "use": "regular",
+    "meant_to_use": true
+   }
+  },
+  {
+   "account": "Halden Pumps",
+   "status": "yellow",
+   "rule_applied": "One strong signal (disengagement), 2 weeks so far",
+   "customer_call_in_window": true,
+   "headline": "Plant manager has missed two calls and line 2 is 'not a priority this month'",
+   "detail": "Line 3 is used every morning; the expansion decision has stalled.",
+   "why": [
+    {
+     "reason": "The plant manager, who asked for line 2 in February, has not joined the last two weekly calls and has not read the line 2 plan.",
+     "driver": "disengagement",
+     "weeks_present": 2,
+     "relayed": false,
+     "quote": "He hasn't looked at it yet. It's not a priority this month.",
+     "evidence": [
+      {
+       "label": "Weekly, 2026-03-12 (00:18)",
+       "url": "../../transcripts/2026-03-12_halden-pumps_weekly.md#L6"
+      },
+      {
+       "label": "Weekly, 2026-03-05 (00:12)",
+       "url": "../../transcripts/2026-03-05_halden-pumps_weekly.md#L6"
+      },
+      {
+       "label": "Monthly review, 2026-02-19 (01:05)",
+       "url": "../../transcripts/2026-02-19_halden-pumps_monthly-review.md#L7"
+      }
+     ]
+    }
+   ],
+   "tone": "same",
+   "usage": {
+    "use": "daily",
+    "meant_to_use": true
    },
-   {
-    "reason": "On the recorded call the line is stable and stop clips were used in two root-cause sessions.",
-    "driver": "other", "weeks_present": 1, "relayed": false,
-    "quote": "We used the stop clips in two root-cause sessions this week.",
-    "evidence": [{"label": "Weekly, 2026-03-09 (00:12)", "url": "../../transcripts/2026-03-09_corvel-plastics_weekly.md#L5"}]
+   "golive": {
+    "late": "partial since 2 Feb"
    }
-  ]
- },
- {
-  "account": "Halden Pumps",
-  "status": "yellow",
-  "rule_applied": "One strong signal (disengagement), 2 weeks so far",
-  "customer_call_in_window": true,
-  "headline": "Plant manager has missed two calls and line 2 is 'not a priority this month'",
-  "detail": "Line 3 is used every morning; the expansion decision has stalled.",
-  "why": [
-   {
-    "reason": "The plant manager, who asked for line 2 in February, has not joined the last two weekly calls and has not read the line 2 plan.",
-    "driver": "disengagement", "weeks_present": 2, "relayed": false,
-    "quote": "He hasn't looked at it yet. It's not a priority this month.",
-    "evidence": [
-     {"label": "Weekly, 2026-03-12 (00:18)", "url": "../../transcripts/2026-03-12_halden-pumps_weekly.md#L6"},
-     {"label": "Weekly, 2026-03-05 (00:12)", "url": "../../transcripts/2026-03-05_halden-pumps_weekly.md#L6"},
-     {"label": "Monthly review, 2026-02-19 (01:05)", "url": "../../transcripts/2026-02-19_halden-pumps_monthly-review.md#L7"}
-    ]
-   }
-  ]
- }
-]}
+  }
+ ]
+}

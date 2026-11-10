@@ -2,50 +2,102 @@
 
 ![python](https://img.shields.io/badge/python-3.9%2B-blue) ![dependencies](https://img.shields.io/badge/dependencies-stdlib%20only-success) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
-### Red means "would likely churn without escalation". Nothing else.
+### Four colours and why. Nothing else.
 
-**A weekly agent run that reads every installed account's customer calls and gives each one a
-status (red, yellow, green or no signal) with the reason and the evidence. Plus the thinking behind
-it: which signals and metrics were considered, how to read tone without a sentiment score, and how a
-backtest on a churned account changed the rules.**
+**A weekly customer-health board for B2B accounts, built with AI agents: they read every customer
+call, note, team chat message and product-use signal, and give each account red, orange, yellow or
+green, with the reasons and the evidence. This repo is the product and the product thinking: the
+rules, the code, six versions of iterating with its user, and everything that got cut on the way.**
 
 *Companion projects: [**product-discovery-agents**](https://github.com/barbararomeira/product-discovery-agents) reads customer calls for what to build; [**evidence-scored-call-review**](https://github.com/barbararomeira/evidence-scored-call-review) reads them for how the sales conversation went. This one reads them for whether the account is staying.*
 
 | | |
 |---|---|
-| **Problem** | Churn risk lives in call tone, in who stopped turning up, and in end dates nobody connected to the complaint. Health scores turn that into a number people argue with instead of act on. |
-| **Built** | Agents read each account's calls against written rules; deterministic code refuses any status those rules do not allow before a board is built. |
-| **Human boundary** | The system says which accounts are red and why. A person reviews every new red before anyone else sees it and decides the escalation. |
-| **Public scope** | Clean-room template on invented accounts and transcripts. Call-recorder, CRM and publishing integrations are excluded. |
-| **Verification** | A validator over the agents' output (status rules, evidence on every reason, quotes checked verbatim against local transcripts, every account covered), tests on it and on the board, and a shipped example the tests rebuild. |
-| **Status** | Rules v0.2, **proposed**. Backtested on one churned account. |
+| **User** | Whoever owns customer success for an installed base, and the account owners who act on the board each week |
+| **Job** | "Tell me which accounts need me this week, and why, without reading every call." |
+| **Problem** | Churn risk hides in call tone, in who stopped turning up, in end dates nobody connected to the complaint, and in product use that quietly stopped. Health scores turn that into a number people argue with instead of act on. |
+| **Product** | One board, four colours, and at most one tag per topic saying why. Every reason links to a quote, note or message. |
+| **Human boundary** | The agents say which accounts are red and why. A person reviews every new red before anyone else sees it and decides the escalation. |
+| **Status** | Rules **v0.6**. The weekly run was in real use from v0.2 onwards; every version since came from that use. Backtested on one account that had already left. |
 
-<p align="center"><img src="docs/example-board.png" alt="The example board: one red account with three quoted reasons and a pilot end date, three yellow cards, one no-signal card, one green account and a recurring-reasons panel." width="100%"></p>
+<p align="center"><img src="docs/example-board.png" alt="The example board: one red account with five topic tags and three quoted reasons, one orange account whose renewal is 74 days away, three yellow cards and one green card, each with tags such as 'Contract: pilot ends in 46 days' and 'Product use: daily'." width="100%"></p>
 
 ---
 
-## The problem
+## The product in one screen
 
-Every customer-facing team has a feeling about which accounts are in trouble. The feeling is usually
-right about the loud ones and wrong about the quiet ones.
+**Four colours.** Checked in this order; the first match wins.
 
-The quiet ones are the expensive ones: a decision maker who used to speak in every call and hasn't
-for three weeks; a customer who said "it duplicates what we have" in a weekly call while the pilot
-end date sat in a different system; no recordings for a month, read as "all fine". None of these
-arrive as a complaint. All of them are in the calls, if somebody reads all of them, every week,
-against the same rules.
+| | Means | Needs |
+|---|---|---|
+| 🔴 **Red** | Would likely leave without escalation | One churn signal or confirmed exit, **or** two warning signs that have each lasted 3+ weeks |
+| 🟠 **Orange** | Something is wrong, and the clock is running | Anything yellow **and** the contract, pilot or renewal ends within 90 days |
+| 🟡 **Yellow** | Watch | One warning sign, a young trend, an open ask, a late go-live, or no customer call |
+| 🟢 **Green** | Healthy | A customer call in the window, tone normal or better, nothing serious open |
+
+**Six topics say why.** At most one tag each, red against and green in favour. Tags explain the
+colour; they never change it.
+
+| Leaving | Contract | Tone | Product use | Go-live | Improvements |
+|---|---|---|---|---|---|
+| said they may stop · site is ending | ends in 46 days · end passed | worse than usual · gone quiet · no call — *or* as usual · warmer | stopped · not logging in · halved — *or* daily · regular | late · partial — *or* on time | not delivering · no value seen yet · numbers disputed · request unanswered |
+
+## How it got here
+
+Six versions in three weeks, each started by something the user said or something the data got wrong, and each
+one took something out. The full story, with what we'd measure to know it works, is in
+[**The product story**](docs/09-product-story.md).
+
+| | Trigger | Change |
+|---|---|---|
+| **v0.1** | "We know about the loud accounts, not the quiet ones." | Agents read every call weekly against written rules |
+| **v0.2** | A backtest gave **zero weeks of warning** on a real churn | Silence is never green; nearest end date includes pilot ends |
+| **v0.3** | "Make every account near renewal yellow" would have mixed two meanings | **Orange** = wrong *and* ending soon; timing became a tag |
+| **v0.4** | "We want daily use, but some customers get their reports by email" | Product use joins the same colours; only a collapse counts against |
+| **v0.5** | An exit showed up only in a team chat. *"I just want red, orange, yellow, green, and why."* | Team chat as a source; the board cut to four colours and why |
+| **v0.6** | Around twenty tag wordings. *"Do we need any more?"* | Six fixed topics, one tag each |
+
+## Product decisions worth stealing
+
+- **No score on the board.** People act on reasons and argue with numbers. Red has implied weights
+  (a churn signal counts 2, a lasting warning sign 1, red at 2), but nobody has to read them.
+- **New data joins the model, never gets its own score.** Product use, contracts and team chat all
+  push toward a colour. One question, one answer per account.
+- **Silence isn't health.** No customer call in four weeks can never be green.
+- **Only a collapse counts against product use.** Low use would punish exactly the accounts whose
+  emailed reports work. Count people who click, not page views: a screen left open on a dashboard
+  isn't use.
+- **Tone is compared with the same customer**, never with other customers. A terse engineering team
+  isn't an unhappy one.
+- **Simpler with every version.** Every addition replaced something. Ideas the agents couldn't get
+  reliably right (whose fault a delay was) were turned down rather than built badly.
+- **A person sees every new red first.** The agents decide nothing on their own that reaches the
+  customer's account owner.
+
+The reasoning, alternatives and costs of each choice: [**Decisions**](DECISIONS.md) (19 entries).
+
+## What we deliberately left out
+
+- **A churn probability.** Too few churns to calibrate one.
+- **Revenue weighting.** Every red gets the same treatment.
+- **A fifth status, a renewals strip, a patterns panel.** All built, all removed in v0.5.
+- **Call-recorder, CRM, chat and analytics connectors.** The run reads folders. Getting data there
+  is yours; [product-discovery-agents](https://github.com/barbararomeira/product-discovery-agents/tree/main/sources)
+  shows a folder setup and a connector setup.
 
 ## Read it in this order
 
 | | | |
 |---|---|---|
-| 1 | [**The question**](docs/01-the-question.md) | What the check answers (and what it deliberately doesn't), the four statuses, why not a churn probability |
-| 2 | [**Signals and metrics considered**](docs/02-signals-and-metrics.md) | Everything we thought about measuring (calls, meetings, product usage, contract), how each one misleads, and which ones made it into the rules |
-| 3 | [**Reading tone**](docs/03-reading-tone.md) | Why an absolute sentiment score fails, and the alternative: each customer compared with their own earlier calls, speaker by speaker, with a quote for every claim |
-| 4 | [**The status rules**](docs/04-status-rules.md) | The full v0.2 rules |
-| 5 | [**Backtesting**](docs/05-backtesting.md) | v0.1 gave zero weeks of warning on a real churn. What it missed, what changed, and how to backtest |
-| 6 | [**How the weekly run was designed**](docs/06-how-the-run-worked.md) | Agent roles, one finding, the board, the weekly rhythm |
-| 7 | [**Proposed for v0.3**](docs/07-proposed-v0.3.md) | Not applied yet: orange for "wrong and the contract ends soon", renewal tags, a go-live clock for onboarding accounts, a 12-week tone baseline |
+| 1 | [**The question**](docs/01-the-question.md) | What the check answers (and what it deliberately doesn't), and why not a churn probability |
+| 2 | [**Signals and metrics considered**](docs/02-signals-and-metrics.md) | Everything we thought about measuring, how each one misleads, and which made it in |
+| 3 | [**Reading tone**](docs/03-reading-tone.md) | Why an absolute sentiment score fails, and the alternative: each customer against their own earlier calls |
+| 4 | [**The status rules**](docs/04-status-rules.md) | The full v0.6 rules, the six topics, the math, and the changelog |
+| 5 | [**Backtesting**](docs/05-backtesting.md) | v0.1 gave zero weeks of warning on a real churn. What it missed and what changed |
+| 6 | [**How the weekly run was designed**](docs/06-how-the-run-worked.md) | Agent roles, one finding per account, the board, the weekly rhythm |
+| 7 | [**The v0.3 proposal**](docs/07-proposed-v0.3.md) | The proposal as written, kept to show the reasoning before the decision |
+| 8 | [**Product use**](docs/08-product-usage.md) | How usage enters the same colours without punishing report-first accounts |
+| 9 | [**The product story**](docs/09-product-story.md) | Six versions, what triggered each, what was cut, and how we'd know it works |
 | | [**Decisions**](DECISIONS.md) | The choices, each with what we considered and what it costs |
 | | [**Worked example**](example-run/) | Six invented accounts, their calls, the findings and the board |
 | | [**Agent prompt**](prompts/weekly.md) | The rules turned into instructions for the coordinator and the account readers |
@@ -67,50 +119,28 @@ $EDITOR roster.json                            # every installed account; see ex
 ./scripts/run_weekly.sh                        # needs Claude Code on the PATH
 ```
 
-Sources are your choice: any call recorder, CRM or tracker that can fill those three inputs works
-([Choosing your sources](docs/04-status-rules.md#choosing-your-sources)).
+Sources are your choice: any call recorder, CRM, chat tool or analytics product that can fill those
+inputs works ([Choosing your sources](docs/04-status-rules.md#choosing-your-sources)).
 `config.json`, `roster.json`, `transcripts/`, `notes/` and `output/` are git-ignored. Your customers'
 words never belong in a repo. The board is a local HTML file; publishing it is deliberately a
 separate step, so a person sees every new red first ([Decision 9](DECISIONS.md#9-a-person-sees-a-new-red-before-anyone-else)).
 
-## The ideas in one screen
-
-- **Checks run in order: no signal → red → yellow → green.** The first match wins.
-- **Red is rare and rule-based.** One explicit churn signal (2 points), or two different warning
-  signs that have each lasted three of the last four weeks (1 point each); red starts at 2. When in
-  doubt, yellow.
-- **Silence isn't health.** No customer call in the window means *no signal*, never green.
-- **Attendance is who speaks**, not who was on the invite.
-- **Tone is compared with the same customer**, never with other customers.
-- **A missing recording is unknown**, not a no-show, unless notes say otherwise.
-- **The nearest end date decides urgency**: pilot end, decision meeting, contract or renewal,
-  whichever comes first.
-- **A second-hand statement can make yellow**, never red on its own.
-- **Every reason has a quote and a link.** No evidence, no reason.
-- **Reasons are about the customer**, never about the account owner.
-- **No scores on the board.** People act on reasons and argue with numbers.
-
-## What we deliberately left out
-
-- **A churn probability.** Too few churns to calibrate one.
-- **Revenue weighting.** Every red gets the same treatment.
-- **Product usage.** Wanted, and listed in [the metrics](docs/02-signals-and-metrics.md#from-the-product),
-  but it needs an integration per product. The roster is the place to add it.
-- **Call-recorder and CRM connectors.** The run reads a folder of transcripts. Getting them there is
-  yours; [product-discovery-agents](https://github.com/barbararomeira/product-discovery-agents/tree/main/sources)
-  shows a folder setup and a connector setup.
+**Verification.** A validator checks the agents' output before any board is built: only colours the
+rules allow, evidence on every reason, quotes checked word for word against local transcripts,
+orange only with an end date within 90 days, and every account covered. Tests cover it, the topic
+tags and the board, and rebuild the shipped example.
 
 ## Repository layout
 
 ```
-docs/                     the thinking: 01 question … 06 how the run works
+docs/                     the thinking: 01 question … 09 product story
 DECISIONS.md              the choices, what was considered, what each costs
 prompts/weekly.md         coordinator prompt + account-reader brief ({{PLACEHOLDERS}} from config)
-healthcheck/              rules.py (the numbers), validate.py (the checks), board.py, prompt.py — stdlib only
+healthcheck/              rules.py (colours, topics, numbers), validate.py (the checks), board.py, prompt.py — stdlib only
 scripts/run_weekly.sh     the scheduled entry point: lock, agents, validate, build
 config.example.json       copy to config.json
 example-run/              six invented accounts, their calls and notes, findings and the board
-tests/                    validator rules, board history, and a rebuild of the example
+tests/                    validator rules, topic tags, board history, and a rebuild of the example
 ```
 
 ## Note on names

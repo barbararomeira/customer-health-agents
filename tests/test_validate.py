@@ -62,13 +62,15 @@ def test_red_needs_a_quote():
     assert any("quote" in x for x in errors(account("red", [reason("churn_signal")])))
 
 
-# --- green and no signal -----------------------------------------------------------------------
+# --- silence, orange, leaving ------------------------------------------------------------------
 
-def test_without_a_customer_call_the_only_status_is_no_signal():
-    """The first check: silence is not health, and it is not yellow or red either."""
-    for status in ("green", "yellow", "red"):
-        why = [reason("churn_signal", quote="we won't renew")]
-        assert any("first check makes it no signal" in x for x in errors(account(status, why, call=False)))
+def test_without_a_customer_call_an_account_cannot_be_green():
+    """Silence is not health: no customer call in the window makes it yellow at most."""
+    assert any("silence is not health" in x for x in errors(account("green", [], call=False)))
+
+
+def test_no_call_yellow_needs_no_other_reason():
+    assert errors(account("yellow", [], call=False)) == []
 
 
 def test_red_points_follow_the_implied_weights():
@@ -77,10 +79,26 @@ def test_red_points_follow_the_implied_weights():
     assert red_points([reason("tone", 3), reason("stuck", 5)]) == 2
     assert red_points([reason("tone", 3), reason("stuck", 2), reason("unmet_ask", 9)]) == 1
     assert red_points([reason("churn_signal", relayed=True), reason("tone", 3, relayed=True)]) == 0
+    assert red_points([reason("usage_collapse", 3), reason("tone", 3)]) == 2
+    assert red_points([reason("golive_late", 12)]) == 0      # a late go-live is yellow, never red
 
 
-def test_no_signal_without_a_call_passes():
-    assert errors(account("no_signal", [], call=False, headline=None)) == []
+def test_a_confirmed_exit_is_red_even_when_written_down_by_a_colleague():
+    """Hard facts (our equipment is being removed) count in full, wherever they were written."""
+    why = [reason("leaving", relayed=True, quote="All of them come out next week")]
+    assert errors(account("red", why)) == []
+
+
+ROW = {"account": "Acme", "end_date": "2026-05-01"}
+
+
+def test_orange_needs_an_end_date_within_90_days():
+    why = [reason("unmet_ask")]
+    assert validate_account(account("orange", why), ".", ROW, "2026-03-16")[0] == []          # 46 days
+    assert validate_account(account("orange", why), ".", ROW, "2026-06-01")[0] == []          # passed
+    far = validate_account(account("orange", why), ".", ROW, "2025-12-01")[0]
+    assert any("151 days away" in x for x in far)
+    assert any("none in the roster" in x for x in validate_account(account("orange", why), ".", None, "2026-03-16")[0])
 
 
 # --- evidence ----------------------------------------------------------------------------------
@@ -96,6 +114,7 @@ def test_yellow_needs_a_reason():
 
 def test_unknown_status_and_driver_fail():
     assert errors(account("amber", [])) == ["Acme: unknown status 'amber'"]
+    assert errors(account("no_signal", [], call=False)) == ["Acme: unknown status 'no_signal'"]   # v0.6: four colours
     assert any("unknown driver" in x for x in errors(account("yellow", [reason("vibes")])))
 
 

@@ -1,7 +1,11 @@
-# 7. Proposed for v0.3
+# 7. Proposed for v0.3 (kept as written)
 
-**Not applied.** The code and the example still follow v0.2. This is the next set of changes, written
-down after the first real weekly run, while the contract end dates it depends on were being corrected.
+**Now applied, with one exception.** This page is the proposal as it was written after the first real
+weekly run, kept so you can see the reasoning before the decision. Orange, contract tags, the
+go-live clock and the 12-week tone baseline are in v0.3 onwards. "Past the end date = red" was not
+adopted: past end dates were stale data more often than real exits, so they stay a tag until
+confirmed. The open question below (is orange a colour or a yellow with a deadline?) was settled as a
+colour: a near deadline changes who acts and how fast. See the [changelog](04-status-rules.md#changelog).
 
 ## 1. Colour means risk, and only risk
 

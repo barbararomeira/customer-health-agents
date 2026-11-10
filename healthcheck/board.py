@@ -1,6 +1,7 @@
 """Render one run's findings as the weekly health board (a single self-contained HTML page).
 
-The board shows only the status and the reason, with its evidence. The scoring rules are not on it:
+The board shows only the colour and why, with its evidence. Every card carries at most one tag per
+topic (Leaving, Contract, Tone, Product use, Go-live, Improvements). The scoring rules are not on it:
 people act on "red, and here is why", and argue with a score.
 """
 import html
@@ -9,10 +10,10 @@ import os
 from collections import Counter
 from datetime import date
 
-from .rules import DRIVERS, STATUS_ORDER
+from .rules import DRIVER_TAG, DRIVERS, ORANGE_WITHIN_DAYS, STATUS_ORDER, TOPICS
 
 e = html.escape
-LABEL = {"red": "Red", "yellow": "Yellow", "green": "Green", "no_signal": "No signal", "churned": "Left"}
+LABEL = {"red": "Red", "orange": "Orange", "yellow": "Yellow", "green": "Green", "no_signal": "Yellow", "churned": "Left"}
 
 
 def _norm(s):
@@ -61,11 +62,63 @@ def left_accounts(history, week_key):
     return sorted(seen - set(history.get(week_key, {})))
 
 
-def recurring_reasons(accounts):
-    """Drivers that appear on two or more red/yellow accounts: a pattern, not a one-off."""
-    flagged = [a for a in accounts if a["status"] in ("red", "yellow")]
-    c = Counter(d for a in flagged for d in {w.get("driver") for w in a.get("why") or []} if d and d != "other")
-    return [(DRIVERS[d], k, len(flagged)) for d, k in c.most_common(4) if k >= 2]
+def why_tags(a, roster_row, run_date, window=4):
+    """The reasons for the colour as topic tags: {"neg": {topic: text}, "pos": {topic: text}}.
+
+    At most one tag per topic. Red cards show only what counts against; green cards only what counts
+    in favour. Optional finding fields: "tone" (worse / same / better), "usage" ({"use": daily |
+    regular | low | none, "collapse", "halved", "meant_to_use"}), "golive" ({"late": "week 7" |
+    "partial since 15 Jul", "on_time": bool}).
+    """
+    neg, pos = {}, {}
+    for w in a.get("why") or []:
+        t = DRIVER_TAG.get(w.get("driver"))
+        if t:
+            neg.setdefault(*t)
+    g = a.get("golive") or {}
+    if g.get("late"):
+        neg["Go-live"] = g["late"] if "Go-live" not in neg or neg["Go-live"] == "late" else neg["Go-live"]
+    elif g.get("on_time"):
+        pos["Go-live"] = "on time"
+    if roster_row and roster_row.get("end_date") and run_date:
+        days = (date.fromisoformat(roster_row["end_date"]) - date.fromisoformat(run_date)).days
+        label = (roster_row.get("end_label") or "Ends").lower()
+        if days < 0:
+            neg.setdefault("Contract", f"end passed ({roster_row['end_date']})")
+        elif days <= ORANGE_WITHIN_DAYS:
+            neg.setdefault("Contract", f"{label} in {days} days")
+    tone = a.get("tone")
+    if tone == "worse":
+        neg.setdefault("Tone", "worse than usual")
+    elif not a.get("customer_call_in_window"):
+        neg.setdefault("Tone", f"no customer call in {window} weeks")
+    elif tone == "better":
+        pos["Tone"] = "warmer than usual"
+    elif tone == "same":
+        pos["Tone"] = "as usual"
+    u = a.get("usage") or {}
+    if u.get("collapse"):
+        neg.setdefault("Product use", "stopped")
+    elif u.get("use") == "daily":
+        pos["Product use"] = "daily"
+    elif u.get("use") == "regular":
+        pos["Product use"] = "regular"
+    elif u.get("meant_to_use") and u.get("use") in ("low", "none"):
+        neg["Product use"] = "not logging in" if u["use"] == "none" else "rarely logs in"
+    if u.get("halved") and not u.get("collapse"):
+        neg.setdefault("Product use", "halved")
+    pos = {k: v for k, v in pos.items() if k not in neg}
+    if a["status"] == "red":
+        pos = {}
+    if a["status"] == "green":
+        neg = {}
+    return {"neg": neg, "pos": pos}
+
+
+def _tags_html(tags):
+    out = [f'<span class="why neg"><b>{e(k)}:</b> {e(tags["neg"][k])}</span>' for k in TOPICS if k in tags["neg"]]
+    out += [f'<span class="why pos"><b>{e(k)}:</b> {e(tags["pos"][k])}</span>' for k in TOPICS if k in tags["pos"]]
+    return f'<div class="whys">{"".join(out)}</div>' if out else ""
 
 
 def render(accounts, roster, history, week_key, run_date, cfg):
@@ -79,18 +132,12 @@ def render(accounts, roster, history, week_key, run_date, cfg):
     def owner(name):
         return _roster_row(roster, name).get("owner") or "—"
 
-    def end_chip(name):
-        r = _roster_row(roster, name)
-        if not r.get("end_date"):
-            return ""
-        days = (date.fromisoformat(r["end_date"]) - date.fromisoformat(run_date)).days
-        if days < 0:
-            return ""
-        kind = r.get("end_label") or "Ends"
-        return f'<span class="chip">{e(kind)} {e(r["end_date"])} · {days} days</span>'
+    def tags(a):
+        return _tags_html(why_tags(a, _roster_row(roster, a["account"]), run_date, window))
 
     def new_tag(a):
         p = history[prev_week].get(a["account"]) if prev_week else None
+        p = "yellow" if p == "no_signal" else p          # the old fifth status is drawn as yellow
         return '<span class="tag">New</span>' if p is not None and p != a["status"] else ""
 
     def links(ev):
@@ -117,7 +164,8 @@ def render(accounts, roster, history, week_key, run_date, cfg):
         sup = (f'<p class="sup"><span>Support needed</span>{e(a["support_needed"])}</p>'
                if a.get("support_needed") else "")
         return f'''<article class="red-card">
-  <div class="rc-head"><h3>{e(a["account"])}</h3>{new_tag(a)}<span class="muted">Owner {e(owner(a["account"]))}</span>{end_chip(a["account"])}</div>
+  <div class="rc-head"><h3>{e(a["account"])}</h3>{new_tag(a)}<span class="muted">Owner {e(owner(a["account"]))}</span></div>
+  {tags(a)}
   <p class="headline">{e(a.get("headline") or "")}</p>
   <ul class="reasons">{items}</ul>{sup}
 </article>'''
@@ -127,22 +175,20 @@ def render(accounts, roster, history, week_key, run_date, cfg):
         detail = f'<p class="detail">{e(a["detail"])}</p>' if a.get("detail") else ""
         return f'''<article class="card {kind}">
   <div class="c-head"><h4>{e(a["account"])}</h4>{new_tag(a)}<span class="muted">{e(owner(a["account"]))}</span></div>
-  <p class="c-line">{e(head)}</p>{detail}{sources(a)}
+  {tags(a)}<p class="c-line">{e(head)}</p>{detail}{sources(a)}
 </article>'''
 
     red_html = "".join(red_card(a) for a in groups["red"]) or '<p class="muted">No account is red this week.</p>'
+    orange_html = "".join(small_card(a, "o") for a in groups["orange"]) or '<p class="muted">No orange accounts.</p>'
     yellow_html = "".join(small_card(a, "y") for a in groups["yellow"]) or '<p class="muted">No yellow accounts.</p>'
-    nosig_html = "".join(small_card(a, "n") for a in groups["no_signal"]) or '<p class="muted">Every account had a customer call.</p>'
-    green_html = "".join(f'<span class="gchip">{e(a["account"])}</span>' for a in groups["green"]) or '<span class="muted">—</span>'
-    pat_html = "".join(f"<li><b>{e(d)}</b><span>{k} of {n}</span></li>" for d, k, n in recurring_reasons(accounts)) \
-        or "<li>No reason repeats across accounts.</li>"
+    green_html = "".join(small_card(a, "g") for a in groups["green"]) or '<p class="muted">No green accounts.</p>'
 
     # Trend: last 12 weekly columns; the summary column counts the last 52 runs.
     weeks, year_weeks = weeks_sorted[-12:], weeks_sorted[-52:]
 
     def year_summary(name):
-        c = Counter(history[w].get(name) for w in year_weeks if history[w].get(name))
-        parts = [f"{c[k]} {LABEL[k].lower()}" for k in ("red", "yellow", "green", "no_signal") if c[k]]
+        c = Counter({"no_signal": "yellow"}.get(s, s) for s in (history[w].get(name) for w in year_weeks) if s)
+        parts = [f"{c[k]} {LABEL[k].lower()}" for k in ("red", "orange", "yellow", "green") if c[k]]
         return " · ".join(parts) + (" weeks" if parts else "")
 
     rows = [(a["account"], a["status"]) for a in accounts] + [(n, "churned") for n in left_accounts(history, week_key)]
@@ -158,23 +204,33 @@ def render(accounts, roster, history, week_key, run_date, cfg):
     how = f"""
 <div class="how">
   <section class="panel"><h3>What the board answers</h3>
-    <p>Which installed accounts would likely churn without an escalation, and why. Every account gets one status each week, and every reason links to the call or note it comes from.</p></section>
-  <section class="panel"><h3>The four statuses</h3>
+    <p>Which installed accounts would likely churn without an escalation, and why. Every account gets one colour each week, and every reason links to the call, note or message it comes from.</p></section>
+  <section class="panel"><h3>The four colours</h3>
     <dl>
-      <dt><span class="pill red">Red</span></dt><dd>Would likely churn without escalation. Kept rare: one explicit churn signal from the customer, or two strong warning signs that have lasted 3 weeks or more.</dd>
-      <dt><span class="pill yellow">Yellow</span></dt><dd>Something is off, not at escalation level: one warning sign, a negative trend younger than 3 weeks, or an open ask nobody has answered.</dd>
-      <dt><span class="pill green">Green</span></dt><dd>Engaged, tone normal or positive, no serious open complaint. Needs at least one customer call in the window.</dd>
-      <dt><span class="pill no_signal">No signal</span></dt><dd>No customer call in the last {window} weeks. Internal notes add context but cannot make an account green, because silence is not health.</dd>
+      <dt><span class="pill red">Red</span></dt><dd>Would likely churn without escalation. Kept rare: one explicit churn signal, a confirmed exit (our equipment is being removed), or two warning signs that have each lasted 3 weeks or more.</dd>
+      <dt><span class="pill orange">Orange</span></dt><dd>Something is wrong <b>and</b> the contract, pilot or renewal ends within {ORANGE_WITHIN_DAYS} days (or already passed).</dd>
+      <dt><span class="pill yellow">Yellow</span></dt><dd>Something is off, with no near deadline: one warning sign, a trend younger than 3 weeks, an open ask, a late go-live, or no customer call in {window} weeks.</dd>
+      <dt><span class="pill green">Green</span></dt><dd>Engaged, tone normal or positive, no serious open complaint. Needs at least one customer call in the window: silence is not health.</dd>
     </dl></section>
-  <section class="panel"><h3>How the status is decided</h3>
-    <p class="muted">Checked in this order. The first rule that matches sets the status.</p>
+  <section class="panel"><h3>Why: six topics, one tag each</h3>
+    <p>Every card says why with at most one tag per topic. Red tags count against the account, green tags in its favour. Tags explain the colour; they never change it.</p>
+    <ul>
+      <li><b>Leaving</b>: said they may stop, or the site is ending.</li>
+      <li><b>Contract</b>: ends in X days, or the end date passed.</li>
+      <li><b>Tone</b>: compared with the same customer's earlier calls. Worse, decision makers gone quiet, or no customer call; as usual or warmer.</li>
+      <li><b>Product use</b>: daily or regular use counts in favour. Only a collapse counts against, and only for accounts meant to work in the product.</li>
+      <li><b>Go-live</b>: late (more than 5 weeks from installation) or partial; on time.</li>
+      <li><b>Improvements</b>: not delivering, no value seen yet, our numbers disputed, or an open request unanswered.</li>
+    </ul></section>
+  <section class="panel"><h3>How the colour is decided</h3>
+    <p class="muted">Checked in this order. The first rule that matches sets the colour.</p>
     <ol>
-      <li><span class="pill no_signal">No signal</span> No customer call in the last {window} weeks.</li>
-      <li><span class="pill red">Red</span> One churn signal, <b>or</b> two strong warning signs that have each lasted 3 weeks or more.</li>
-      <li><span class="pill yellow">Yellow</span> One warning sign, a negative trend younger than 3 weeks, or an open complaint or unanswered ask.</li>
+      <li><span class="pill red">Red</span> One churn signal or confirmed exit, <b>or</b> two warning signs that have each lasted 3 weeks or more.</li>
+      <li><span class="pill orange">Orange</span> Anything that would make it yellow, and an end date within {ORANGE_WITHIN_DAYS} days.</li>
+      <li><span class="pill yellow">Yellow</span> One warning sign, a trend younger than 3 weeks, an open ask, a late go-live, or no customer call.</li>
       <li><span class="pill green">Green</span> At least one customer call, tone normal or positive, and no serious open complaint.</li>
     </ol>
-    <p class="muted">Implied weights: a churn signal counts 2, a warning sign that has lasted 3+ weeks counts 1, and red starts at 2.</p></section>
+    <p class="muted">Implied weights: a churn signal or confirmed exit counts 2, a warning sign that has lasted 3+ weeks counts 1, and red starts at 2.</p></section>
   <section class="panel"><h3>What never counts against an account</h3>
     <ul>
       <li>A missing recording with no explanation. It is marked unknown, never a no-show.</li>
@@ -194,12 +250,12 @@ def render(accounts, roster, history, week_key, run_date, cfg):
 <body><div class="wrap">
   <header class="top">
     <div><h1>Customer Health · Week {e(week[1:])}</h1>
-      <p class="muted">All installed accounts · customer calls and internal notes, last {window} weeks · run {e(run_date)}</p></div>
+      <p class="muted">All installed accounts · customer calls, internal notes and product use, last {window} weeks · run {e(run_date)}</p></div>
     <div class="counts" aria-label="Summary">
       <div class="count r"><b>{counts["red"]}</b><span>Red</span></div>
+      <div class="count o"><b>{counts["orange"]}</b><span>Orange</span></div>
       <div class="count y"><b>{counts["yellow"]}</b><span>Yellow</span></div>
       <div class="count g"><b>{counts["green"]}</b><span>Green</span></div>
-      <div class="count n"><b>{counts["no_signal"]}</b><span>No signal</span></div>
     </div>
   </header>
   <nav class="tabs" aria-label="Views">
@@ -213,12 +269,9 @@ def render(accounts, roster, history, week_key, run_date, cfg):
   <div class="view" id="view-how" hidden>{how}</div>
   <div class="view" id="view-board">
     <section><h2><i style="background:var(--red)"></i>Red · needs escalation</h2>{red_html}</section>
+    <section><h2><i style="background:var(--orange)"></i>Orange · wrong, and the end date is close</h2><div class="grid">{orange_html}</div></section>
     <section><h2><i style="background:var(--yellow)"></i>Yellow · watch</h2><div class="grid">{yellow_html}</div></section>
-    <div class="bottom">
-      <section><h2><i style="background:var(--grey)"></i>No signal · no customer call</h2><div class="grid">{nosig_html}</div></section>
-      <section><h2><i style="background:var(--green)"></i>Green</h2><div class="panel gchips">{green_html}</div></section>
-      <section><h2>Recurring reasons</h2><div class="panel"><ul class="pat">{pat_html}</ul></div></section>
-    </div>
+    <section><h2><i style="background:var(--green)"></i>Green · healthy</h2><div class="grid">{green_html}</div></section>
   </div>
 </div>
 <script>

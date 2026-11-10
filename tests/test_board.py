@@ -29,11 +29,41 @@ def test_an_account_missing_from_this_run_has_left():
     assert board.left_accounts(HISTORY, "2026-W12") == ["Gone"]
 
 
-def test_recurring_reasons_need_two_flagged_accounts():
-    a = [{"status": "yellow", "why": [{"driver": "tone"}, {"driver": "tone"}]},
-         {"status": "red", "why": [{"driver": "tone"}, {"driver": "stuck"}]},
-         {"status": "green", "why": [{"driver": "stuck"}]}]
-    assert board.recurring_reasons(a) == [("Tone", 2, 2)]
+def _tags(status, why=(), call=True, row=None, **extra):
+    a = {"account": "Acme", "status": status, "why": [{"driver": d} for d in why], "customer_call_in_window": call}
+    a.update(extra)
+    return board.why_tags(a, row, "2026-03-16")
+
+
+def test_one_tag_per_topic_first_driver_wins():
+    t = _tags("yellow", why=["stuck", "unmet_ask"])
+    assert t["neg"] == {"Improvements": "not delivering"}
+
+
+def test_tags_only_use_the_six_topics():
+    from healthcheck.rules import TOPICS
+    t = _tags("yellow", why=["leaving", "tone", "trust_broken", "golive_late", "usage_collapse"],
+              row={"end_date": "2026-04-01", "end_label": "Renewal"})
+    assert set(t["neg"]) <= set(TOPICS) and len(t["neg"]) == 6 - 1 + 1   # every topic once (Leaving..Improvements)
+
+
+def test_red_shows_only_against_and_green_only_in_favour():
+    assert _tags("red", why=["churn_signal"], tone="better")["pos"] == {}
+    assert _tags("green", why=["unmet_ask"], tone="same")["neg"] == {}
+    assert _tags("green", tone="same")["pos"] == {"Tone": "as usual"}
+
+
+def test_no_call_is_a_tone_tag_and_report_first_accounts_are_never_tagged_for_not_logging_in():
+    t = _tags("yellow", call=False, usage={"use": "none", "meant_to_use": False})
+    assert t["neg"] == {"Tone": "no customer call in 4 weeks"}
+    t = _tags("yellow", usage={"use": "none", "meant_to_use": True})
+    assert t["neg"] == {"Product use": "not logging in"}
+
+
+def test_contract_tag_only_within_90_days_or_passed():
+    assert _tags("yellow", row={"end_date": "2026-12-31"})["neg"] == {}
+    assert _tags("yellow", row={"end_date": "2026-05-01", "end_label": "Pilot ends"})["neg"] == {"Contract": "pilot ends in 46 days"}
+    assert _tags("yellow", row={"end_date": "2026-03-01"})["neg"] == {"Contract": "end passed (2026-03-01)"}
 
 
 def test_example_run_validates_and_builds(tmp_path):
@@ -42,8 +72,9 @@ def test_example_run_validates_and_builds(tmp_path):
     run = tmp_path / "ex" / "runs" / "2026-W12"
     assert main([str(run), "--date", "2026-03-16", "--config", CFG]) == 0
     page = (run / "board.html").read_text()
-    assert "Acme Foods" in page and "Pilot ends 2026-05-01 · 46 days" in page
-    assert page.count('<span class="tag">New</span>') == 2   # Acme yellow→red, Corvel green→yellow
+    assert "Acme Foods" in page and "<b>Contract:</b> pilot ends in 46 days" in page
+    assert page.count('<span class="tag">New</span>') == 3   # Acme yellow→red, Corvel green→yellow, Vertex yellow→orange
+    assert "No signal" not in page and "Recurring reasons" not in page   # v0.6: four colours and why, nothing else
     history = json.loads((tmp_path / "ex" / "runs" / "history.json").read_text())
     assert list(history) == ["2026-W10", "2026-W11", "2026-W12"]
 

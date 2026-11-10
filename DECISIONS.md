@@ -209,7 +209,7 @@ An unanswered ask is still a reason, written as what the customer is waiting for
 
 ## 13. Colour is risk; timing is a tag
 
-**Chose (proposed for v0.3):** a contract that ends soon doesn't change an account's colour on its
+**Chose (v0.3):** a contract that ends soon doesn't change an account's colour on its
 own. Every account within 90 days of its end date gets a "Renews in X days" tag and appears in a
 renewals strip, green ones included. Only a *problem plus* a near end date changes the colour
 (orange).
@@ -224,14 +224,16 @@ contract while its plant manager was positive and a bridge contract was pending.
 would have lost a saveable account. So out of contract with nothing signed is **red** (escalate
 now), not a lost cause.
 
-**Implementation status:** proposal only, in [docs/07-proposed-v0.3.md](docs/07-proposed-v0.3.md).
-The code still follows v0.2.
+**Implementation status:** in use since v0.3, in the code and the example (`ORANGE_WITHIN_DAYS`).
+The renewals strip was later removed (Decision 16): the Contract tag on each card does that job.
+"Out of contract = red" was **not** adopted: past end dates were stale data more often than real
+exits, so they stay a tag ("Contract: end passed") until someone confirms.
 
 ---
 
 ## 14. Onboarding accounts are judged on the go-live clock, not on calls
 
-**Chose (proposed for v0.3):** accounts that are installed but not fully live are judged on how
+**Chose (v0.3):** accounts that are installed but not fully live are judged on how
 long go-live is taking. Few customer calls during setup and training are expected and are not
 "no signal" for the first 5 weeks.
 
@@ -240,5 +242,84 @@ going live can still look green. Neither tells you the real risk, which is a slo
 where dissatisfaction builds unseen. And a partial go-live is not a go-live: something the customer
 bought is still missing.
 
-**Implementation status:** proposal only. The 4 / 5 / 12-week numbers are team targets, not
-measured.
+**Implementation status:** in use since v0.3 (the "Go-live" tag). The 4 / 5 / 12-week numbers are
+team targets, not measured.
+
+---
+
+## 15. Product usage feeds the colours, and only a collapse counts against
+
+**Chose (v0.4):** no separate usage score. Usage enters the existing model: regular
+use counts as engagement; a collapse (regular use, then almost nothing for 3+ weeks) is one lasting
+warning sign, only for accounts meant to work in the product. Report-first accounts and accounts not
+yet live are never counted down for not logging in. Halved or low use is shown as a tag, no points.
+
+**Why:** the goal is daily use, but accounts that get daily reports have no reason to log in yet, so
+"low use" would punish the accounts where reports work. All four churned customers with usage
+history showed a collapse, not a gradual drop, while healthy accounts had half-usage weeks for
+ordinary reasons. Counting people who click, not page views, keeps screens left open from looking
+like heavy use.
+
+**Implementation status:** in use since v0.4, in [docs/08-product-usage.md](docs/08-product-usage.md)
+and the "Product use" tag. The cut-offs are a first guess to re-check after a few weekly runs.
+
+---
+
+## 16. Four colours and the reasons, nothing else
+
+**Chose (v0.5):** the board shows only red, orange, yellow and green, and every card
+says why in plain words ("Not logging in", "Tone worse than usual", "Contract ends in 30 days",
+"Uses the app daily"). "No signal" became a yellow reason; the renewals strip and the recurring-
+reasons panel were removed.
+
+**Why:** the board had grown a fifth status, a renewals strip, timing tags, tone tags, usage tags and
+a patterns panel. Its owner wanted to answer one question per account: what colour, and why.
+
+---
+
+## 17. A confirmed exit is red, and the company note travels with it
+
+**Chose (v0.5):** team chat channels per customer are read every run. A hard fact that a
+site is ending (our equipment being removed) makes it red with the reason "Leaving", and the card
+says whether the company continues at other sites.
+
+**Why:** a site that had been off for a year left. The decision came by email and showed up only in
+a team channel; calls and the tracker still said "off, retraining", so the board showed orange.
+Exiting sites are often one site of a customer that stays, so the card must not read as losing the
+customer.
+
+---
+
+## 18. Why is six topics, one tag each
+
+**Chose (v0.6):** every card's "why" uses six fixed topics: **Leaving, Contract, Tone, Product use,
+Go-live, Improvements**. At most one tag per topic, written "Topic: value" ("Contract: renewal in 74
+days", "Product use: daily"). Red cards show only what counts against, green cards only what counts
+in favour. Tags explain the colour; they never change it.
+
+**Considered:** free-text tags written by the agent for each account. Also: keeping a tag that said
+"customer call in the last 4 weeks" on green cards that had no tone reading.
+
+**Why:** a week after Decision 16, the board had around twenty different tag wordings and its owner
+asked "do we need any more?". A fixed vocabulary makes cards comparable at a glance and makes a new
+kind of reason a deliberate product decision instead of drift. The "recent call" tag went because it
+said nothing about how the call went, and on one account it was false. A green card with no tags
+now simply means nothing counts against it.
+
+**Costs:** a reason that fits none of the six topics only shows in the headline. That is on purpose:
+if it keeps happening, it is the signal to add a topic.
+
+---
+
+## 19. A late go-live is not split by whose fault it was
+
+**Chose (v0.6):** "Go-live: late" counts weeks since installation, whoever caused the delay.
+
+**Considered:** splitting it into "our delay" (counts against) and "waiting on the customer" (privacy
+approval, works council, their IT; no count). One account was late only because of the customer's
+data-privacy approval.
+
+**Why:** the cause of a delay is often unclear in calls and chat, and a wrong "their fault" would hide
+a real problem. The card's headline gives the context instead ("live since 5 Nov after the
+data-privacy delay"), and a person can add more by hand.
+

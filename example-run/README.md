@@ -15,9 +15,9 @@ looks like on real-shaped data. Each account shows one rule:
 |---|---|---|
 | **Acme Foods** | Red | An explicit churn signal ("we won't continue") with the pilot ending in 46 days. Also two strong signals lasting three weeks: value questioned on 24 Feb and 10 Mar, and counts disputed in both calls. |
 | **Corvel Plastics** | Yellow | Procurement questioning the licence count, but **relayed** in an internal note, not said on a call. Relayed statements cannot make red alone. |
-| **Halden Pumps** | Yellow | The plant manager has stopped speaking in calls (spoke on 19 Feb, absent 5 and 12 Mar). That is disengagement, but only two weeks old. |
-| **Vertex Motors** | Yellow | An ask unanswered for two weeks, chased by the plant manager in person. Open asks are never red. |
-| **Orbis Packaging** | No signal | No customer call in the window. The notes explain it (monthly calls during a rebuild), so it is not counted as a no-show, but notes cannot make it green. |
+| **Halden Pumps** | Yellow | The plant manager has stopped speaking in calls (spoke on 19 Feb, absent 5 and 12 Mar). That is disengagement, but only two weeks old. Line 2 is only partly live ("Go-live: partial"), while daily product use counts in its favour. |
+| **Vertex Motors** | Orange | An ask unanswered for two weeks, chased by the plant manager in person. Open asks are never red, but the renewal is 74 days away, so it is orange, not yellow. Product use has halved (a tag, no points). |
+| **Orbis Packaging** | Yellow | No customer call in the window ("Tone: no customer call in 4 weeks"). The notes explain it (monthly calls during a rebuild), so it is not counted as a no-show, but notes cannot make it green. It is a report-first account, so low product use shows no tag. |
 | **Lumen Devices** | Green | A customer call in the window, positive, asking to expand. |
 
 `runs/history.json` holds two earlier weeks, so the trend tab has something to show and the *New*
