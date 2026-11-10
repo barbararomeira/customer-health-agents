@@ -4,6 +4,8 @@
 
 ### Four colours and why. Nothing else.
 
+<p align="center"><img src="docs/how-it-works.gif" alt="How it works: calls, notes and team chat feed five steps — read, check against written rules, colour (red, orange, yellow, green), why (six topics, one tag each), and you review every new red first — repeated every Friday." width="100%"></p>
+
 **A weekly customer-health board for B2B accounts, built with AI agents: they read every customer
 call, note, team chat message and product-use signal, and give each account red, orange, yellow or
 green, with the reasons and the evidence. This repo is the product and the product thinking: the
@@ -20,11 +22,11 @@ rules, the code, six versions of iterating with its user, and everything that go
 | **Human boundary** | The agents say which accounts are red and why. A person reviews every new red before anyone else sees it and decides the escalation. |
 | **Status** | Rules **v0.6**. The weekly run was in real use from v0.2 onwards; every version since came from that use. Backtested on one account that had already left. |
 
-<p align="center"><img src="docs/example-board.png" alt="The example board: one red account with five topic tags and three quoted reasons, one orange account whose renewal is 74 days away, three yellow cards and one green card, each with tags such as 'Contract: pilot ends in 46 days' and 'Product use: daily'." width="100%"></p>
-
 ---
 
 ## The product in one screen
+
+<p align="center"><img src="docs/example-board.png" alt="The example board: one red account with five topic tags and three quoted reasons, one orange account whose renewal is 74 days away, three yellow cards and one green card, each with tags such as 'Contract: pilot ends in 46 days' and 'Product use: daily'." width="100%"></p>
 
 **Four colours.** Checked in this order; the first match wins.
 
